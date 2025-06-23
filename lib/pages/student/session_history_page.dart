@@ -187,9 +187,8 @@ class _SessionHistoryPageState extends State<SessionHistoryPage>
         ],
         bottom: TabBar(
           controller: _tabController,
-          isScrollable: true,
           labelColor: AppColors.textWhite,
-          unselectedLabelColor: AppColors.textWhite.withOpacity(0.7),
+          unselectedLabelColor: AppColors.textWhite,
           indicatorColor: AppColors.textWhite,
           tabs: const [
             Tab(text: 'Semua'),

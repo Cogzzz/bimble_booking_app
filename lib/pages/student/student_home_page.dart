@@ -40,62 +40,246 @@ class _StudentHomePageState extends State<StudentHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Consumer<AuthProvider>(
-          builder: (context, authProvider, child) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Selamat Datang,',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textWhite.withOpacity(0.8),
-                  ),
-                ),
-                Text(
-                  authProvider.currentUser?.displayName ?? 'Student',
-                  style: AppTextStyles.h6.copyWith(
-                    color: AppColors.textWhite,
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
-        backgroundColor: AppColors.primary,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-      ),
       body: RefreshIndicator(
         onRefresh: () async => _loadData(),
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Quick Stats
-              _buildQuickStats(),
-              
-              SizedBox(height: 24),
-              
-              // Upcoming Sessions
-              _buildUpcomingSessions(),
-              
-              SizedBox(height: 24),
-              
-              // Top Rated Tutors
-              _buildTopRatedTutors(),
-              
-              SizedBox(height: 24),
-              
-              // Quick Actions
-              _buildQuickActions(),
+              // Custom Header (akan ikut scroll)
+              _buildCustomHeader(),
+
+              // Content
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Quick Stats
+                    _buildQuickStats(),
+                    
+                    SizedBox(height: 24),
+                    
+                    // Upcoming Sessions
+                    _buildUpcomingSessions(),
+                    
+                    SizedBox(height: 24),
+                    
+                    // Top Rated Tutors
+                    _buildTopRatedTutors(),
+                    
+                    SizedBox(height: 24),
+                    
+                    // Quick Actions
+                    _buildQuickActions(),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildCustomHeader() {
+    return Container(
+      // Menambahkan padding untuk status bar
+      padding: EdgeInsets.only(
+        top: MediaQuery.of(context).padding.top,
+        left: 20,
+        right: 20,
+        bottom: 20,
+      ),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColors.primary, AppColors.primary.withOpacity(0.8)],
+        ),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(24),
+          bottomRight: Radius.circular(24),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.3),
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Consumer<AuthProvider>(
+        builder: (context, authProvider, child) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 10),
+
+              // Header dengan informasi student
+              Row(
+                children: [
+                  // Avatar dan informasi student
+                  Expanded(
+                    child: Row(
+                      children: [
+                        // Avatar
+                        Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors.surface,
+                            border: Border.all(
+                              color: AppColors.textWhite.withOpacity(0.3),
+                              width: 2,
+                            ),
+                          ),
+                          child: ClipOval(
+                            child: authProvider.currentUser?.avatarUrl != null
+                                ? Image.network(
+                                    authProvider.currentUser!.avatarUrl!,
+                                    width: 50,
+                                    height: 50,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return _buildInitialsAvatar(authProvider);
+                                    },
+                                  )
+                                : _buildInitialsAvatar(authProvider),
+                          ),
+                        ),
+
+                        SizedBox(width: 16),
+
+                        // Greeting dan nama student
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Greeting
+                              Text(
+                                _getGreeting(),
+                                style: AppTextStyles.bodyMedium.copyWith(
+                                  color: AppColors.textWhite.withOpacity(0.9),
+                                  fontSize: 14,
+                                ),
+                              ),
+
+                              SizedBox(height: 2),
+
+                              // Nama student
+                              Text(
+                                authProvider.currentUser?.displayName ?? 'Student',
+                                style: AppTextStyles.h4.copyWith(
+                                  color: AppColors.textWhite,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 24,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+
+                              SizedBox(height: 2),
+
+                              // Status student
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.secondary.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: AppColors.secondary.withOpacity(0.3),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Pelajar Aktif',
+                                  style: AppTextStyles.labelSmall.copyWith(
+                                    color: AppColors.textWhite,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Notification icon
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: AppColors.textWhite.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: IconButton(
+                      onPressed: () {
+                        // TODO: Navigate to notifications
+                      },
+                      icon: Icon(
+                        Icons.notifications_outlined,
+                        color: AppColors.textWhite,
+                        size: 22,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildInitialsAvatar(AuthProvider authProvider) {
+    final name = authProvider.currentUser?.displayName ?? 'Student';
+    final initials = name
+        .split(' ')
+        .map((e) => e.isNotEmpty ? e[0] : '')
+        .take(2)
+        .join()
+        .toUpperCase();
+
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [AppColors.secondary, AppColors.secondaryDark],
+        ),
+        shape: BoxShape.circle,
+      ),
+      child: Center(
+        child: Text(
+          initials,
+          style: AppTextStyles.h6.copyWith(
+            color: AppColors.textWhite,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) {
+      return 'Selamat Pagi';
+    } else if (hour < 15) {
+      return 'Selamat Siang';
+    } else if (hour < 18) {
+      return 'Selamat Sore';
+    } else {
+      return 'Selamat Malam';
+    }
   }
 
   Widget _buildQuickStats() {
@@ -123,33 +307,58 @@ class _StudentHomePageState extends State<StudentHomePage> {
           );
         }
 
-        return Row(
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: StatsCard(
-                title: 'Total Sesi',
-                value: '${stats.totalSessions}',
-                icon: Icons.school_outlined,
-                color: AppColors.primary,
+            Text(
+              'Statistik Belajar',
+              style: AppTextStyles.h6.copyWith(
+                fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(width: 12),
-            Expanded(
-              child: StatsCard(
-                title: 'Jam Belajar',
-                value: stats.formattedTotalHours,
-                icon: Icons.access_time_outlined,
-                color: AppColors.secondary,
-              ),
+            SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: StatsCard(
+                    title: 'Total Sesi',
+                    value: '${stats.totalSessions}',
+                    icon: Icons.school_outlined,
+                    color: AppColors.primary,
+                  ),
+                ),
+                SizedBox(width: 12),
+                Expanded(
+                  child: StatsCard(
+                    title: 'Jam Belajar',
+                    value: stats.formattedTotalHours,
+                    icon: Icons.access_time_outlined,
+                    color: AppColors.secondary,
+                  ),
+                ),
+              ],
             ),
-            SizedBox(width: 12),
-            Expanded(
-              child: StatsCard(
-                title: 'Kehadiran',
-                value: stats.formattedAttendanceRate,
-                icon: Icons.check_circle_outlined,
-                color: AppColors.success,
-              ),
+            SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: StatsCard(
+                    title: 'Tutor Favorit',
+                    value: '${stats.favoriteTutors.length}',
+                    icon: Icons.favorite_outlined,
+                    color: AppColors.warning,
+                  ),
+                ),
+                SizedBox(width: 12),
+                Expanded(
+                  child: StatsCard(
+                    title: 'Rata-rata Rating',
+                    value: '${stats.formattedAverageRating} ⭐',
+                    icon: Icons.star_outlined,
+                    color: AppColors.info,
+                  ),
+                ),
+              ],
             ),
           ],
         );
@@ -158,35 +367,42 @@ class _StudentHomePageState extends State<StudentHomePage> {
   }
 
   Widget _buildUpcomingSessions() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Sesi Mendatang',
-              style: AppTextStyles.h6,
-            ),
-            TextButton(
-              onPressed: () {
-                // Navigate to full booking list
-              },
-              child: Text('Lihat Semua'),
-            ),
-          ],
-        ),
-        SizedBox(height: 12),
-        Consumer<BookingProvider>(
-          builder: (context, bookingProvider, child) {
-            if (bookingProvider.isLoading) {
-              return const LoadingWidget();
-            }
+    return Consumer<BookingProvider>(
+      builder: (context, bookingProvider, child) {
+        if (bookingProvider.isLoading) {
+          return const LoadingWidget();
+        }
 
-            final upcomingBookings = bookingProvider.upcomingBookings.take(3).toList();
-            
-            if (upcomingBookings.isEmpty) {
-              return Container(
+        final upcomingBookings = bookingProvider.studentBookings
+            .where((booking) => 
+                booking.status == 'confirmed' && 
+                booking.bookingDate.isAfter(DateTime.now()))
+            .toList();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Sesi Mendatang',
+                  style: AppTextStyles.h6.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                if (upcomingBookings.isNotEmpty)
+                  TextButton(
+                    onPressed: () {
+                      // TODO: Navigate to full schedule
+                    },
+                    child: Text('Lihat Semua'),
+                  ),
+              ],
+            ),
+            SizedBox(height: 12),
+            if (upcomingBookings.isEmpty)
+              Container(
                 width: double.infinity,
                 padding: EdgeInsets.all(24),
                 decoration: BoxDecoration(
@@ -197,78 +413,73 @@ class _StudentHomePageState extends State<StudentHomePage> {
                 child: Column(
                   children: [
                     Icon(
-                      Icons.event_available_outlined,
+                      Icons.calendar_today_outlined,
                       size: 48,
-                      color: AppColors.textHint,
+                      color: AppColors.textSecondary,
                     ),
                     SizedBox(height: 12),
                     Text(
-                      'Belum ada sesi mendatang',
+                      'Belum ada sesi yang dijadwalkan',
                       style: AppTextStyles.bodyMedium.copyWith(
                         color: AppColors.textSecondary,
                       ),
                     ),
                     SizedBox(height: 8),
                     Text(
-                      'Cari tutor dan buat booking baru',
+                      'Cari tutor dan buat jadwal belajar Anda',
                       style: AppTextStyles.bodySmall.copyWith(
                         color: AppColors.textHint,
                       ),
                     ),
                   ],
                 ),
-              );
-            }
-
-            return Column(
-              children: upcomingBookings
-                  .map((booking) => Padding(
-                        padding: EdgeInsets.only(bottom: 12),
-                        child: BookingCard(
-                          booking: booking,
-                          onTap: () {
-                            // Navigate to booking detail
-                          },
-                        ),
-                      ))
-                  .toList(),
-            );
-          },
-        ),
-      ],
+              )
+            else
+              ...upcomingBookings.take(3).map((booking) => Padding(
+                padding: EdgeInsets.only(bottom: 8),
+                child: BookingCard(booking: booking),
+              )),
+          ],
+        );
+      },
     );
   }
 
   Widget _buildTopRatedTutors() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Tutor Terbaik',
-              style: AppTextStyles.h6,
-            ),
-            TextButton(
-              onPressed: () {
-                // Navigate to search tutor page
-              },
-              child: Text('Lihat Semua'),
-            ),
-          ],
-        ),
-        SizedBox(height: 12),
-        Consumer<TutorProvider>(
-          builder: (context, tutorProvider, child) {
-            if (tutorProvider.isLoading) {
-              return const LoadingWidget();
-            }
+    return Consumer<TutorProvider>(
+      builder: (context, tutorProvider, child) {
+        if (tutorProvider.isLoading) {
+          return const LoadingWidget();
+        }
 
-            final topTutors = tutorProvider.getTopRatedTutors(limit: 3);
-            
-            if (topTutors.isEmpty) {
-              return Container(
+        final topTutors = tutorProvider.tutors
+            .where((tutor) => tutor.rating >= 4.5)
+            .take(3)
+            .toList();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Tutor Terbaik',
+                  style: AppTextStyles.h6.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    // TODO: Navigate to search tutor page
+                  },
+                  child: Text('Lihat Semua'),
+                ),
+              ],
+            ),
+            SizedBox(height: 12),
+            if (topTutors.isEmpty)
+              Container(
                 width: double.infinity,
                 padding: EdgeInsets.all(24),
                 decoration: BoxDecoration(
@@ -279,38 +490,34 @@ class _StudentHomePageState extends State<StudentHomePage> {
                 child: Column(
                   children: [
                     Icon(
-                      Icons.person_search_outlined,
+                      Icons.people_outlined,
                       size: 48,
-                      color: AppColors.textHint,
+                      color: AppColors.textSecondary,
                     ),
                     SizedBox(height: 12),
                     Text(
-                      'Belum ada data tutor',
+                      'Belum ada tutor yang tersedia',
                       style: AppTextStyles.bodyMedium.copyWith(
                         color: AppColors.textSecondary,
                       ),
                     ),
                   ],
                 ),
-              );
-            }
-
-            return Column(
-              children: topTutors
-                  .map((tutor) => Padding(
-                        padding: EdgeInsets.only(bottom: 12),
-                        child: TutorCard(
-                          tutor: tutor,
-                          onTap: () {
-                            // Navigate to tutor detail
-                          },
-                        ),
-                      ))
-                  .toList(),
-            );
-          },
-        ),
-      ],
+              )
+            else
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: topTutors.map((tutor) => Container(
+                    width: 280,
+                    margin: EdgeInsets.only(right: 12),
+                    child: TutorCard(tutor: tutor),
+                  )).toList(),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 
@@ -320,31 +527,33 @@ class _StudentHomePageState extends State<StudentHomePage> {
       children: [
         Text(
           'Aksi Cepat',
-          style: AppTextStyles.h6,
+          style: AppTextStyles.h6.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
         ),
         SizedBox(height: 12),
         Row(
           children: [
             Expanded(
               child: _buildActionCard(
-                title: 'Cari Tutor',
-                subtitle: 'Temukan tutor terbaik',
                 icon: Icons.search,
+                title: 'Cari Tutor',
+                description: 'Temukan tutor terbaik',
                 color: AppColors.primary,
                 onTap: () {
-                  // Navigate to search tutor
+                  // TODO: Navigate to search tutor
                 },
               ),
             ),
             SizedBox(width: 12),
             Expanded(
               child: _buildActionCard(
-                title: 'Riwayat Sesi',
-                subtitle: 'Lihat pembelajaran Anda',
                 icon: Icons.history,
+                title: 'Riwayat Sesi',
+                description: 'Lihat sesi sebelumnya',
                 color: AppColors.secondary,
                 onTap: () {
-                  // Navigate to session history
+                  // TODO: Navigate to session history
                 },
               ),
             ),
@@ -355,41 +564,56 @@ class _StudentHomePageState extends State<StudentHomePage> {
   }
 
   Widget _buildActionCard({
-    required String title,
-    required String subtitle,
     required IconData icon,
+    required String title,
+    required String description,
     required Color color,
     required VoidCallback onTap,
   }) {
-    return InkWell(
+    return GestureDetector(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              color.withOpacity(0.1),
+              color.withOpacity(0.05),
+            ],
+          ),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withOpacity(0.3)),
+          border: Border.all(
+            color: color.withOpacity(0.2),
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(
-              icon,
-              size: 32,
-              color: color,
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                icon,
+                color: color,
+                size: 24,
+              ),
             ),
-            SizedBox(height: 8),
+            SizedBox(height: 12),
             Text(
               title,
               style: AppTextStyles.labelLarge.copyWith(
-                color: color,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.bold,
               ),
             ),
             SizedBox(height: 4),
             Text(
-              subtitle,
+              description,
               style: AppTextStyles.bodySmall.copyWith(
                 color: AppColors.textSecondary,
               ),

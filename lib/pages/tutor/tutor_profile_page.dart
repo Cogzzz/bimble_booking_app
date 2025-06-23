@@ -196,6 +196,7 @@ class _TutorProfilePageState extends State<TutorProfilePage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: AppColors.tutorColor,
         title: Text('Profil Saya'),
         automaticallyImplyLeading: false,
         actions: [

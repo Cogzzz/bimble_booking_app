@@ -206,6 +206,7 @@ class _SessionHistoryPageState extends State<SessionHistoryPage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: AppColors.tutorColor,
         title: Text('Riwayat Sesi'),
         automaticallyImplyLeading: false,
         actions: [
@@ -216,6 +217,9 @@ class _SessionHistoryPageState extends State<SessionHistoryPage>
         ],
         bottom: TabBar(
           controller: _tabController,
+          labelColor: AppColors.textWhite,
+          unselectedLabelColor: AppColors.textWhite,
+          indicatorColor: AppColors.textWhite,
           tabs: [
             Tab(text: 'Semua'),
             Tab(text: 'Bulan Ini'),

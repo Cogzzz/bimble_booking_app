@@ -223,6 +223,7 @@ class _SchedulePageState extends State<SchedulePage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: AppColors.tutorColor,
         title: Text('Jadwal Saya'),
         automaticallyImplyLeading: false,
         actions: [
@@ -233,6 +234,9 @@ class _SchedulePageState extends State<SchedulePage>
         ],
         bottom: TabBar(
           controller: _tabController,
+          labelColor: AppColors.textWhite,
+          unselectedLabelColor: AppColors.textWhite,
+          indicatorColor: AppColors.textWhite,
           tabs: [
             Tab(text: 'Semua'),
             Tab(text: 'Menunggu'),

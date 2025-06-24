@@ -1,4 +1,3 @@
-// pages/student/session_history_page.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/session_provider.dart';
@@ -29,6 +28,11 @@ class _SessionHistoryPageState extends State<SessionHistoryPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        _loadSessions();
+      }
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadSessions();
     });
@@ -355,7 +359,7 @@ class _SessionHistoryPageState extends State<SessionHistoryPage>
                 child: SessionCard(
                   session: session,
                   onTap: () => _showSessionDetail(session),
-                    onRating: session.hasRating
+                  onRating: session.hasRating
                       ? null
                       : () => _addRating(session),
                 ),

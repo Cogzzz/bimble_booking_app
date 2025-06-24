@@ -1,4 +1,3 @@
-// services/auth_service.dart - Updated with tutor profile check
 import '../models/user_model.dart';
 import '../core/constants.dart';
 import 'supabase_service.dart';
@@ -9,12 +8,11 @@ class AuthService {
   // Login with email and password
   Future<UserModel?> login(String email, String password) async {
     try {
-      // Simple login check against users table
       final response = await _supabaseService.selectSingle(
         table: AppConstants.usersTable,
         filters: {
           'email': email,
-          'password': password, // In production, use proper password hashing
+          'password': password, 
         },
       );
 
@@ -49,7 +47,7 @@ class AuthService {
       // Create new user
       final userData = {
         'email': email,
-        'password': password, // In production, hash this
+        'password': password, 
         'role': role,
         'name': name,
         'phone': phone,
@@ -74,7 +72,6 @@ class AuthService {
         filters: {'user_id': userId},
       );
     } catch (e) {
-      print('Error checking tutor profile: $e');
       return false;
     }
   }

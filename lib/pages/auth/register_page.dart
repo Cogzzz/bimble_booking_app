@@ -1,4 +1,3 @@
-// pages/auth/register_page.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
@@ -8,7 +7,7 @@ import '../../core/validators.dart';
 import '../../widgets/common/custom_text_field.dart';
 import '../../widgets/common/custom_button.dart';
 import '../shared/main_navigation.dart';
-import 'tutor_setup_page.dart'; // Import TutorSetupPage
+import 'tutor_setup_page.dart'; 
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({Key? key}) : super(key: key);

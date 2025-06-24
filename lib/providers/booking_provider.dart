@@ -1,4 +1,3 @@
-// providers/booking_provider.dart
 import 'package:flutter/material.dart';
 import '../models/booking_model.dart';
 import '../services/supabase_service.dart';
@@ -21,6 +20,9 @@ class BookingProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   String? get successMessage => _successMessage;
+  
+  // Add this getter to expose the supabase service
+  SupabaseService get supabaseService => _supabaseService;
 
   // Get upcoming bookings
   List<BookingModel> get upcomingBookings {
@@ -39,6 +41,34 @@ class BookingProvider with ChangeNotifier {
   // Get confirmed bookings
   List<BookingModel> get confirmedBookings {
     return _bookings.where((booking) => booking.isConfirmed).toList();
+  }
+
+  // Add a method to get unavailable slots (better approach)
+  Future<List<String>> getUnavailableSlots(String tutorId, DateTime date) async {
+    try {
+      final response = await _supabaseService.client
+          .from(AppConstants.bookingsTable)
+          .select('start_time, end_time')
+          .eq('tutor_id', tutorId)
+          .eq('booking_date', date.toIso8601String().split('T')[0])
+          .inFilter('status', [AppConstants.statusPending, AppConstants.statusConfirmed]);
+
+      List<String> unavailable = [];
+      for (var booking in response) {
+        // Generate all conflicting hours
+        final startHour = int.parse(booking['start_time'].split(':')[0]);
+        final endHour = int.parse(booking['end_time'].split(':')[0]);
+        
+        for (int hour = startHour; hour < endHour; hour++) {
+          unavailable.add('${hour.toString().padLeft(2, '0')}:00');
+        }
+      }
+
+      return unavailable;
+    } catch (e) {
+      print('Error loading unavailable slots: $e');
+      return [];
+    }
   }
 
   // Create new booking

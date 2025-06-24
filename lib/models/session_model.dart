@@ -1,4 +1,3 @@
-// models/session_model.dart
 import 'user_model.dart';
 import 'booking_model.dart';
 

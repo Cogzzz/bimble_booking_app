@@ -1,4 +1,3 @@
-// widgets/cards/stats_card.dart
 import 'package:flutter/material.dart';
 import '../../core/theme.dart';
 

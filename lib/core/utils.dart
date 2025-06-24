@@ -1,4 +1,3 @@
-// core/utils.dart
 import 'package:intl/intl.dart';
 
 class AppUtils {

@@ -27,6 +27,11 @@ class _SchedulePageState extends State<SchedulePage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        _loadBookings(); 
+      }
+    });
     _loadBookings();
   }
 
@@ -39,8 +44,10 @@ class _SchedulePageState extends State<SchedulePage>
   void _loadBookings() {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     if (authProvider.currentUser != null) {
-      Provider.of<BookingProvider>(context, listen: false)
-          .loadTutorBookings(authProvider.currentUser!.id);
+      Provider.of<BookingProvider>(
+        context,
+        listen: false,
+      ).loadTutorBookings(authProvider.currentUser!.id);
     }
   }
 
@@ -73,10 +80,16 @@ class _SchedulePageState extends State<SchedulePage>
   }
 
   void _updateBookingStatus(String bookingId, String status) async {
-    final bookingProvider = Provider.of<BookingProvider>(context, listen: false);
-    
-    final success = await bookingProvider.updateBookingStatus(bookingId, status);
-    
+    final bookingProvider = Provider.of<BookingProvider>(
+      context,
+      listen: false,
+    );
+
+    final success = await bookingProvider.updateBookingStatus(
+      bookingId,
+      status,
+    );
+
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -87,7 +100,9 @@ class _SchedulePageState extends State<SchedulePage>
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(bookingProvider.errorMessage ?? AppConstants.errorGeneral),
+          content: Text(
+            bookingProvider.errorMessage ?? AppConstants.errorGeneral,
+          ),
           backgroundColor: AppColors.error,
         ),
       );
@@ -103,19 +118,19 @@ class _SchedulePageState extends State<SchedulePage>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Aksi Booking',
-              style: AppTextStyles.h6,
-            ),
+            Text('Aksi Booking', style: AppTextStyles.h6),
             SizedBox(height: 16),
-            
+
             if (booking.isPending) ...[
               ListTile(
                 leading: Icon(Icons.check_circle, color: AppColors.success),
                 title: Text('Konfirmasi Booking'),
                 onTap: () {
                   Navigator.of(context).pop();
-                  _updateBookingStatus(booking.id, AppConstants.statusConfirmed);
+                  _updateBookingStatus(
+                    booking.id,
+                    AppConstants.statusConfirmed,
+                  );
                 },
               ),
               ListTile(
@@ -123,11 +138,14 @@ class _SchedulePageState extends State<SchedulePage>
                 title: Text('Tolak Booking'),
                 onTap: () {
                   Navigator.of(context).pop();
-                  _updateBookingStatus(booking.id, AppConstants.statusCancelled);
+                  _updateBookingStatus(
+                    booking.id,
+                    AppConstants.statusCancelled,
+                  );
                 },
               ),
             ],
-            
+
             if (booking.isConfirmed) ...[
               ListTile(
                 leading: Icon(Icons.how_to_reg, color: AppColors.primary),
@@ -146,11 +164,14 @@ class _SchedulePageState extends State<SchedulePage>
                 title: Text('Batalkan Booking'),
                 onTap: () {
                   Navigator.of(context).pop();
-                  _updateBookingStatus(booking.id, AppConstants.statusCancelled);
+                  _updateBookingStatus(
+                    booking.id,
+                    AppConstants.statusCancelled,
+                  );
                 },
               ),
             ],
-            
+
             ListTile(
               leading: Icon(Icons.info, color: AppColors.textSecondary),
               title: Text('Detail Booking'),
@@ -178,7 +199,10 @@ class _SchedulePageState extends State<SchedulePage>
             _buildDetailRow('Mata Pelajaran', booking.subject),
             _buildDetailRow('Tanggal', booking.formattedDate),
             _buildDetailRow('Waktu', booking.formattedTime),
-            _buildDetailRow('Durasi', AppUtils.formatDuration(booking.durationMinutes)),
+            _buildDetailRow(
+              'Durasi',
+              AppUtils.formatDuration(booking.durationMinutes),
+            ),
             _buildDetailRow('Status', booking.statusText),
             if (booking.notes != null && booking.notes!.isNotEmpty)
               _buildDetailRow('Catatan', booking.notes!),
@@ -202,18 +226,10 @@ class _SchedulePageState extends State<SchedulePage>
         children: [
           SizedBox(
             width: 80,
-            child: Text(
-              label,
-              style: AppTextStyles.labelMedium,
-            ),
+            child: Text(label, style: AppTextStyles.labelMedium),
           ),
           Text(': ', style: AppTextStyles.labelMedium),
-          Expanded(
-            child: Text(
-              value,
-              style: AppTextStyles.bodyMedium,
-            ),
-          ),
+          Expanded(child: Text(value, style: AppTextStyles.bodyMedium)),
         ],
       ),
     );
@@ -227,10 +243,7 @@ class _SchedulePageState extends State<SchedulePage>
         title: Text('Jadwal Saya'),
         automaticallyImplyLeading: false,
         actions: [
-          IconButton(
-            icon: Icon(Icons.calendar_today),
-            onPressed: _selectDate,
-          ),
+          IconButton(icon: Icon(Icons.calendar_today), onPressed: _selectDate),
         ],
         bottom: TabBar(
           controller: _tabController,
@@ -276,7 +289,7 @@ class _SchedulePageState extends State<SchedulePage>
               ],
             ),
           ),
-          
+
           // Bookings List
           Expanded(
             child: TabBarView(
@@ -363,7 +376,7 @@ class _SchedulePageState extends State<SchedulePage>
         }
 
         final todaysBookings = bookingProvider.getTodaysBookings();
-        
+
         if (todaysBookings.isEmpty) {
           return _buildEmptyState('today');
         }
@@ -424,17 +437,11 @@ class _SchedulePageState extends State<SchedulePage>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              size: 64,
-              color: AppColors.textHint,
-            ),
+            Icon(icon, size: 64, color: AppColors.textHint),
             SizedBox(height: 16),
             Text(
               title,
-              style: AppTextStyles.h6.copyWith(
-                color: AppColors.textHint,
-              ),
+              style: AppTextStyles.h6.copyWith(color: AppColors.textHint),
             ),
             SizedBox(height: 8),
             Text(

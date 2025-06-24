@@ -1,5 +1,3 @@
-// models/statistics_model.dart
-
 class StatisticsModel {
   final int totalSessions;
   final double totalHours;

@@ -1,9 +1,7 @@
-// pages/shared/main_navigation.dart - Updated with tutor setup check
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../core/theme.dart';
-import '../../core/constants.dart';
 
 // Student Pages
 import '../student/student_home_page.dart';
@@ -43,7 +41,7 @@ class MainNavigationState extends State<MainNavigation> {
   // Method untuk mendapatkan index maksimum berdasarkan role
   int _getMaxTabIndex() {
     final authProvider = context.read<AuthProvider>();
-    return authProvider.isStudent ? 5 : 4; // Student: 5 tabs, Tutor: 4 tabs
+    return authProvider.isStudent ? 5 : 4; 
   }
 
   // Method untuk navigasi ke halaman booking dengan tab tertentu
@@ -62,11 +60,7 @@ class MainNavigationState extends State<MainNavigation> {
     }
   }
 
-  void _navigateToBookingSubTab(BuildContext context, int tabIndex) {
-    // Implementasi untuk navigasi ke sub-tab dalam StudentBookingPage
-    // Ini akan dipanggil dari StudentHomePage melalui callback atau global state
-    // Untuk saat ini, kita akan menggunakan pendekatan yang lebih sederhana
-  }
+  void _navigateToBookingSubTab(BuildContext context, int tabIndex) { }
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +76,6 @@ class MainNavigationState extends State<MainNavigation> {
           return TutorSetupPage(
             onSetupComplete: () {
               authProvider.completeTutorSetup();
-              // No need to navigate, the Consumer will rebuild automatically
             },
           );
         }
@@ -96,7 +89,7 @@ class MainNavigationState extends State<MainNavigation> {
           ),
           bottomNavigationBar: BottomNavigationBar(
             currentIndex: _currentIndex,
-            onTap: navigateToTab, // Menggunakan method navigateToTab
+            onTap: navigateToTab,
             type: BottomNavigationBarType.fixed,
             selectedItemColor: isStudent
                 ? AppColors.primary
@@ -111,11 +104,10 @@ class MainNavigationState extends State<MainNavigation> {
     );
   }
 
-  // Student Pages - UPDATED: Added booking page
   List<Widget> get _studentPages => [
     const StudentHomePage(),
     const SearchTutorPage(),
-    const StudentBookingPage(), // NEW: Booking status page
+    const StudentBookingPage(), 
     const SessionHistoryPage(),
     const StudentProfilePage(),
   ];
@@ -141,9 +133,9 @@ class MainNavigationState extends State<MainNavigation> {
       label: 'Cari Tutor',
     ),
     BottomNavigationBarItem(
-      icon: Icon(Icons.bookmark_outlined), // NEW: Booking icon
+      icon: Icon(Icons.bookmark_outlined), 
       activeIcon: Icon(Icons.bookmark),
-      label: 'Booking', // NEW: Booking tab
+      label: 'Booking', 
     ),
     BottomNavigationBarItem(
       icon: Icon(Icons.history_outlined),

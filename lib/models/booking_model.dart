@@ -1,4 +1,3 @@
-// models/booking_model.dart
 import 'user_model.dart';
 
 class BookingModel {

@@ -27,6 +27,11 @@ class _SessionHistoryPageState extends State<SessionHistoryPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        _loadSessions(); 
+      }
+    });
     _loadSessions();
   }
 
@@ -39,8 +44,10 @@ class _SessionHistoryPageState extends State<SessionHistoryPage>
   void _loadSessions() {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     if (authProvider.currentUser != null) {
-      Provider.of<SessionProvider>(context, listen: false)
-          .loadTutorSessions(authProvider.currentUser!.id);
+      Provider.of<SessionProvider>(
+        context,
+        listen: false,
+      ).loadTutorSessions(authProvider.currentUser!.id);
     }
   }
 
@@ -63,10 +70,7 @@ class _SessionHistoryPageState extends State<SessionHistoryPage>
                 _buildDetailRow('Rating', session.ratingText),
               if (session.hasNotes) ...[
                 SizedBox(height: 12),
-                Text(
-                  'Catatan:',
-                  style: AppTextStyles.labelMedium,
-                ),
+                Text('Catatan:', style: AppTextStyles.labelMedium),
                 SizedBox(height: 4),
                 Container(
                   width: double.infinity,
@@ -75,10 +79,7 @@ class _SessionHistoryPageState extends State<SessionHistoryPage>
                     color: AppColors.background,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Text(
-                    session.notes!,
-                    style: AppTextStyles.bodyMedium,
-                  ),
+                  child: Text(session.notes!, style: AppTextStyles.bodyMedium),
                 ),
               ],
             ],
@@ -102,18 +103,10 @@ class _SessionHistoryPageState extends State<SessionHistoryPage>
         children: [
           SizedBox(
             width: 80,
-            child: Text(
-              label,
-              style: AppTextStyles.labelMedium,
-            ),
+            child: Text(label, style: AppTextStyles.labelMedium),
           ),
           Text(': ', style: AppTextStyles.labelMedium),
-          Expanded(
-            child: Text(
-              value,
-              style: AppTextStyles.bodyMedium,
-            ),
-          ),
+          Expanded(child: Text(value, style: AppTextStyles.bodyMedium)),
         ],
       ),
     );
@@ -136,8 +129,10 @@ class _SessionHistoryPageState extends State<SessionHistoryPage>
               ),
               items: [
                 DropdownMenuItem(value: null, child: Text('Semua')),
-                ...AppConstants.subjects.map((subject) => 
-                  DropdownMenuItem(value: subject, child: Text(subject))),
+                ...AppConstants.subjects.map(
+                  (subject) =>
+                      DropdownMenuItem(value: subject, child: Text(subject)),
+                ),
               ],
               onChanged: (value) {
                 setState(() {
@@ -146,7 +141,7 @@ class _SessionHistoryPageState extends State<SessionHistoryPage>
               },
             ),
             SizedBox(height: 16),
-            
+
             // Attendance Filter
             DropdownButtonFormField<String>(
               value: _selectedAttendance,
@@ -156,9 +151,18 @@ class _SessionHistoryPageState extends State<SessionHistoryPage>
               ),
               items: [
                 DropdownMenuItem(value: null, child: Text('Semua')),
-                DropdownMenuItem(value: AppConstants.attendancePresent, child: Text('Hadir')),
-                DropdownMenuItem(value: AppConstants.attendanceLate, child: Text('Terlambat')),
-                DropdownMenuItem(value: AppConstants.attendanceAbsent, child: Text('Tidak Hadir')),
+                DropdownMenuItem(
+                  value: AppConstants.attendancePresent,
+                  child: Text('Hadir'),
+                ),
+                DropdownMenuItem(
+                  value: AppConstants.attendanceLate,
+                  child: Text('Terlambat'),
+                ),
+                DropdownMenuItem(
+                  value: AppConstants.attendanceAbsent,
+                  child: Text('Tidak Hadir'),
+                ),
               ],
               onChanged: (value) {
                 setState(() {
@@ -192,11 +196,15 @@ class _SessionHistoryPageState extends State<SessionHistoryPage>
     List<SessionModel> filtered = List.from(sessions);
 
     if (_selectedSubject != null) {
-      filtered = filtered.where((session) => session.subject == _selectedSubject).toList();
+      filtered = filtered
+          .where((session) => session.subject == _selectedSubject)
+          .toList();
     }
 
     if (_selectedAttendance != null) {
-      filtered = filtered.where((session) => session.attendance == _selectedAttendance).toList();
+      filtered = filtered
+          .where((session) => session.attendance == _selectedAttendance)
+          .toList();
     }
 
     return filtered;
@@ -289,7 +297,7 @@ class _SessionHistoryPageState extends State<SessionHistoryPage>
             itemBuilder: (context, index) {
               final date = sortedDates[index];
               final dateSessions = groupedSessions[date]!;
-              
+
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -306,14 +314,19 @@ class _SessionHistoryPageState extends State<SessionHistoryPage>
                         ),
                         SizedBox(width: 8),
                         Text(
-                          AppUtils.getDayName(dateSessions.first.sessionDate.weekday),
+                          AppUtils.getDayName(
+                            dateSessions.first.sessionDate.weekday,
+                          ),
                           style: AppTextStyles.bodySmall.copyWith(
                             color: AppColors.textSecondary,
                           ),
                         ),
                         Spacer(),
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.primaryLight,
                             borderRadius: BorderRadius.circular(12),
@@ -328,17 +341,21 @@ class _SessionHistoryPageState extends State<SessionHistoryPage>
                       ],
                     ),
                   ),
-                  
+
                   // Sessions for this date
-                  ...dateSessions.map((session) => Padding(
-                    padding: EdgeInsets.only(bottom: 12),
-                    child: SessionCard(
-                      session: session,
-                      onTap: () => _showSessionDetail(session),
-                      showStudentInfo: true,
-                    ),
-                  )).toList(),
-                  
+                  ...dateSessions
+                      .map(
+                        (session) => Padding(
+                          padding: EdgeInsets.only(bottom: 12),
+                          child: SessionCard(
+                            session: session,
+                            onTap: () => _showSessionDetail(session),
+                            showStudentInfo: true,
+                          ),
+                        ),
+                      )
+                      .toList(),
+
                   SizedBox(height: 8),
                 ],
               );
@@ -377,17 +394,11 @@ class _SessionHistoryPageState extends State<SessionHistoryPage>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              size: 64,
-              color: AppColors.textHint,
-            ),
+            Icon(icon, size: 64, color: AppColors.textHint),
             SizedBox(height: 16),
             Text(
               title,
-              style: AppTextStyles.h6.copyWith(
-                color: AppColors.textHint,
-              ),
+              style: AppTextStyles.h6.copyWith(color: AppColors.textHint),
             ),
             SizedBox(height: 8),
             Text(

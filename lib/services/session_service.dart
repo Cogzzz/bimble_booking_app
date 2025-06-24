@@ -1,4 +1,3 @@
-// services/session_service.dart
 import '../models/session_model.dart';
 import '../core/constants.dart';
 import 'supabase_service.dart';

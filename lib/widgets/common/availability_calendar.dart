@@ -6,7 +6,6 @@ import '../../providers/booking_provider.dart';
 import '../../models/tutor_model.dart';
 import '../../core/theme.dart';
 import '../../core/constants.dart';
-import '../../core/utils.dart';
 import '../../widgets/common/custom_text_field.dart';
 import '../../widgets/common/custom_button.dart';
 import '../../widgets/common/loading_widget.dart';
@@ -34,7 +33,6 @@ class _BookingPageState extends State<BookingPage> {
   bool _isLoadingAvailability = false;
   Timer? _availabilityTimer;
 
-  // Jam operasional (bisa disesuaikan)
   final List<String> _timeSlots = [
     '08:00',
     '09:00',
@@ -79,6 +77,8 @@ class _BookingPageState extends State<BookingPage> {
         context,
         listen: false,
       );
+
+      // Cek apakah provider memiliki properti supabaseService
       final response = await bookingProvider.supabaseService.client
           .from(AppConstants.bookingsTable)
           .select('start_time, end_time')
@@ -105,6 +105,7 @@ class _BookingPageState extends State<BookingPage> {
         _isLoadingAvailability = false;
       });
     } catch (e) {
+      print('Error loading unavailable slots: $e');
       setState(() {
         _unavailableSlots = [];
         _isLoadingAvailability = false;
@@ -285,7 +286,7 @@ class _BookingPageState extends State<BookingPage> {
                   radius: 30,
                   backgroundColor: AppColors.primaryLight,
                   child: Text(
-                    widget.tutor.user?.name.substring(0, 1).toUpperCase() ??
+                    widget.tutor.user?.name?.substring(0, 1).toUpperCase() ??
                         'T',
                     style: AppTextStyles.h5.copyWith(
                       color: AppColors.primary,
@@ -353,63 +354,38 @@ class _BookingPageState extends State<BookingPage> {
           'Pilih Mata Pelajaran',
           style: AppTextStyles.labelLarge.copyWith(
             color: AppColors.textPrimary,
-            fontWeight: FontWeight.w600,
           ),
         ),
-        SizedBox(height: 16),
+        SizedBox(height: 12),
         Wrap(
-          spacing: 12,
-          runSpacing: 12,
+          spacing: 8,
+          runSpacing: 8,
           children: subjects.map((subject) {
             final isSelected = _selectedSubject == subject;
-            return AnimatedContainer(
-              duration: Duration(milliseconds: 200),
-              child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _selectedSubject = subject;
-                  });
-                  HapticFeedback.lightImpact();
-                },
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: isSelected ? AppColors.primary : AppColors.surface,
-                    borderRadius: BorderRadius.circular(
-                      25,
-                    ), 
-                    border: Border.all(
-                      color: isSelected
-                          ? AppColors.primary
-                          : AppColors.border.withOpacity(0.3),
-                      width: isSelected ? 2 : 1,
-                    ),
-                    boxShadow: isSelected
-                        ? [
-                            BoxShadow(
-                              color: AppColors.primary.withOpacity(0.2),
-                              blurRadius: 8,
-                              offset: Offset(0, 2),
-                            ),
-                          ]
-                        : [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 4,
-                              offset: Offset(0, 1),
-                            ),
-                          ],
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  _selectedSubject = subject;
+                });
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isSelected ? AppColors.primary : AppColors.surface,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isSelected ? AppColors.primary : AppColors.border,
                   ),
-                  child: Text(
-                    subject,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: isSelected
-                          ? AppColors.textWhite
-                          : AppColors.textPrimary,
-                      fontWeight: isSelected
-                          ? FontWeight.w600
-                          : FontWeight.w500,
-                    ),
+                ),
+                child: Text(
+                  subject,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: isSelected
+                        ? AppColors.textWhite
+                        : AppColors.textPrimary,
+                    fontWeight: isSelected
+                        ? FontWeight.w600
+                        : FontWeight.normal,
                   ),
                 ),
               ),
@@ -446,7 +422,7 @@ class _BookingPageState extends State<BookingPage> {
                 SizedBox(width: 12),
                 Text(
                   _selectedDate != null
-                      ? AppUtils.formatDate(_selectedDate!)
+                      ? '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}'
                       : 'Pilih tanggal',
                   style: AppTextStyles.bodyLarge.copyWith(
                     color: _selectedDate != null
@@ -456,34 +432,6 @@ class _BookingPageState extends State<BookingPage> {
                 ),
               ],
             ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildLegendItem({
-    required Color color,
-    required IconData icon,
-    required String label,
-  }) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          padding: EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.15),
-            borderRadius: BorderRadius.circular(12), 
-          ),
-          child: Icon(icon, color: color, size: 14),
-        ),
-        SizedBox(width: 6),
-        Text(
-          label,
-          style: AppTextStyles.bodySmall.copyWith(
-            color: AppColors.textSecondary,
-            fontWeight: FontWeight.w500,
           ),
         ),
       ],
@@ -541,9 +489,7 @@ class _BookingPageState extends State<BookingPage> {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.circular(
-              20,
-            ), // More rounded like the example
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: AppColors.primary.withOpacity(0.2),
               width: 1,
@@ -635,6 +581,35 @@ class _BookingPageState extends State<BookingPage> {
     );
   }
 
+  // Helper method for legend items
+  Widget _buildLegendItem({
+    required Color color,
+    required IconData icon,
+    required String label,
+  }) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          padding: EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.15),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Icon(icon, color: color, size: 14),
+        ),
+        SizedBox(width: 6),
+        Text(
+          label,
+          style: AppTextStyles.bodySmall.copyWith(
+            color: AppColors.textSecondary,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildEnhancedTimeSlotChip({
     required String timeSlot,
     required bool isSelected,
@@ -694,13 +669,13 @@ class _BookingPageState extends State<BookingPage> {
                     // Haptic feedback
                     HapticFeedback.lightImpact();
                   },
-            borderRadius: BorderRadius.circular(20), 
+            borderRadius: BorderRadius.circular(12),
             child: AnimatedContainer(
               duration: Duration(milliseconds: 200),
               padding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
               decoration: BoxDecoration(
                 color: backgroundColor,
-                borderRadius: BorderRadius.circular(20), 
+                borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: borderColor,
                   width: isSelected ? 2 : 1,
@@ -759,9 +734,7 @@ class _BookingPageState extends State<BookingPage> {
       builder: (BuildContext context) {
         return AlertDialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(
-              24,
-            ), 
+            borderRadius: BorderRadius.circular(16),
           ),
           title: Row(
             children: [
@@ -1004,7 +977,7 @@ class _BookingPageState extends State<BookingPage> {
     if (selectedDate != null) {
       setState(() {
         _selectedDate = selectedDate;
-        _selectedStartTime = null;
+        _selectedStartTime = null; // Reset selected time
         _selectedEndTime = null;
       });
       _loadUnavailableSlots(); // Load availability for new date

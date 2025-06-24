@@ -1,4 +1,3 @@
-// widgets/common/loading_widget.dart
 import 'package:flutter/material.dart';
 import '../../core/theme.dart';
 

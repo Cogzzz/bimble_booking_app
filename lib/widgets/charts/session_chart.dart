@@ -1,4 +1,3 @@
-// widgets/charts/session_chart.dart
 import 'package:flutter/material.dart';
 import '../../models/statistics_model.dart';
 import '../../core/theme.dart';

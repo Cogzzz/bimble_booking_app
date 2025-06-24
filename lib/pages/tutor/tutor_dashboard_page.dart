@@ -1,11 +1,9 @@
-// pages/tutor/tutor_dashboard_page.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/booking_provider.dart';
 import '../../providers/statistics_provider.dart';
 import '../../core/theme.dart';
-import '../../core/constants.dart';
 import '../../widgets/common/loading_widget.dart';
 import '../../widgets/cards/booking_card.dart';
 import '../../widgets/cards/stats_card.dart';
@@ -127,11 +125,8 @@ class _TutorDashboardPageState extends State<TutorDashboardPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: 10),
-              
-              // Header dengan informasi tutor
               Row(
                 children: [
-                  // Avatar dan informasi tutor
                   Expanded(
                     child: Row(
                       children: [

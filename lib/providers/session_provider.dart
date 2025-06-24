@@ -1,4 +1,3 @@
-// providers/session_provider.dart
 import 'package:flutter/material.dart';
 import '../models/session_model.dart';
 import '../services/supabase_service.dart';

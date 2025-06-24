@@ -1,4 +1,3 @@
-// providers/statistics_provider.dart
 import 'package:flutter/material.dart';
 import '../models/statistics_model.dart';
 import '../services/supabase_service.dart';
@@ -6,7 +5,7 @@ import '../core/constants.dart';
 
 class StatisticsProvider with ChangeNotifier {
   final SupabaseService _supabaseService = SupabaseService();
-  
+
   StatisticsModel? _statistics;
   TutorStatistics? _tutorStatistics;
   StudentStatistics? _studentStatistics;
@@ -47,15 +46,23 @@ class StatisticsProvider with ChangeNotifier {
 
       // Calculate statistics
       final totalSessions = sessions.length;
-      final totalHours = sessions.fold(0.0, (sum, session) => 
-          sum + (session['duration_minutes'] ?? 0) / 60.0);
-      
-      final presentSessions = sessions.where((s) => s['attendance'] == 'present').length;
-      final attendanceRate = totalSessions > 0 ? (presentSessions / totalSessions) * 100 : 0.0;
-      
+      final totalHours = sessions.fold(
+        0.0,
+        (sum, session) => sum + (session['duration_minutes'] ?? 0) / 60.0,
+      );
+
+      final presentSessions = sessions
+          .where((s) => s['attendance'] == 'present')
+          .length;
+      final attendanceRate = totalSessions > 0
+          ? (presentSessions / totalSessions) * 100
+          : 0.0;
+
       final ratedSessions = sessions.where((s) => s['rating'] != null).toList();
-      final averageRating = ratedSessions.isNotEmpty ? 
-          ratedSessions.fold(0.0, (sum, s) => sum + (s['rating'] ?? 0)) / ratedSessions.length : 0.0;
+      final averageRating = ratedSessions.isNotEmpty
+          ? ratedSessions.fold(0.0, (sum, s) => sum + (s['rating'] ?? 0)) /
+                ratedSessions.length
+          : 0.0;
 
       // This month sessions
       final now = DateTime.now();
@@ -84,11 +91,16 @@ class StatisticsProvider with ChangeNotifier {
       final List<ChartData> monthlyData = _calculateMonthlyData(sessions);
 
       // Tutor specific stats
-      final uniqueStudents = sessions.map((s) => s['student_id']).toSet().length;
+      final uniqueStudents = sessions
+          .map((s) => s['student_id'])
+          .toSet()
+          .length;
       final hourlyRate = tutorProfile['hourly_rate'] ?? 0;
       final totalEarnings = totalHours * hourlyRate;
-      final pendingBookings = bookings.where((b) => b['status'] == 'pending').length;
-      
+      final pendingBookings = bookings
+          .where((b) => b['status'] == 'pending')
+          .length;
+
       final recentStudents = await _getRecentStudentNames(tutorId);
 
       _tutorStatistics = TutorStatistics(
@@ -141,15 +153,23 @@ class StatisticsProvider with ChangeNotifier {
 
       // Calculate statistics
       final totalSessions = sessions.length;
-      final totalHours = sessions.fold(0.0, (sum, session) => 
-          sum + (session['duration_minutes'] ?? 0) / 60.0);
-      
-      final presentSessions = sessions.where((s) => s['attendance'] == 'present').length;
-      final attendanceRate = totalSessions > 0 ? (presentSessions / totalSessions) * 100 : 0.0;
-      
+      final totalHours = sessions.fold(
+        0.0,
+        (sum, session) => sum + (session['duration_minutes'] ?? 0) / 60.0,
+      );
+
+      final presentSessions = sessions
+          .where((s) => s['attendance'] == 'present')
+          .length;
+      final attendanceRate = totalSessions > 0
+          ? (presentSessions / totalSessions) * 100
+          : 0.0;
+
       final ratedSessions = sessions.where((s) => s['rating'] != null).toList();
-      final averageRating = ratedSessions.isNotEmpty ? 
-          ratedSessions.fold(0.0, (sum, s) => sum + (s['rating'] ?? 0)) / ratedSessions.length : 0.0;
+      final averageRating = ratedSessions.isNotEmpty
+          ? ratedSessions.fold(0.0, (sum, s) => sum + (s['rating'] ?? 0)) /
+                ratedSessions.length
+          : 0.0;
 
       // This month sessions
       final now = DateTime.now();
@@ -180,7 +200,7 @@ class StatisticsProvider with ChangeNotifier {
       // Student specific stats
       final uniqueTutors = sessions.map((s) => s['tutor_id']).toSet().length;
       final favoriteTutors = await _getFavoriteTutorNames(studentId);
-      
+
       // Convert upcoming bookings to UpcomingSession
       final upcomingSessions = upcomingBookings.map((booking) {
         final bookingDate = DateTime.parse(booking['booking_date']);
@@ -192,7 +212,7 @@ class StatisticsProvider with ChangeNotifier {
           int.parse(startTime.split(':')[0]),
           int.parse(startTime.split(':')[1]),
         );
-        
+
         return UpcomingSession(
           id: booking['id'],
           tutorName: booking['tutor']['name'] ?? '',
@@ -230,23 +250,23 @@ class StatisticsProvider with ChangeNotifier {
   List<ChartData> _calculateWeeklyData(List<dynamic> sessions) {
     final Map<String, int> weeklyCount = {};
     final now = DateTime.now();
-    
+
     // Last 7 days
     for (int i = 6; i >= 0; i--) {
       final date = now.subtract(Duration(days: i));
       final dateStr = '${date.day}/${date.month}';
       weeklyCount[dateStr] = 0;
     }
-    
+
     for (final session in sessions) {
       final sessionDate = DateTime.parse(session['session_date']);
       final dateStr = '${sessionDate.day}/${sessionDate.month}';
-      
+
       if (weeklyCount.containsKey(dateStr)) {
         weeklyCount[dateStr] = weeklyCount[dateStr]! + 1;
       }
     }
-    
+
     return weeklyCount.entries
         .map((entry) => ChartData(label: entry.key, value: entry.value))
         .toList();
@@ -255,9 +275,21 @@ class StatisticsProvider with ChangeNotifier {
   // Calculate monthly data for charts
   List<ChartData> _calculateMonthlyData(List<dynamic> sessions) {
     final Map<String, int> monthlyCount = {};
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 
-                   'Jul', 'Agt', 'Sep', 'Okt', 'Nov', 'Des'];
-    
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'Mei',
+      'Jun',
+      'Jul',
+      'Agt',
+      'Sep',
+      'Okt',
+      'Nov',
+      'Des',
+    ];
+
     // Last 6 months
     final now = DateTime.now();
     for (int i = 5; i >= 0; i--) {
@@ -265,16 +297,16 @@ class StatisticsProvider with ChangeNotifier {
       final monthStr = months[monthDate.month - 1];
       monthlyCount[monthStr] = 0;
     }
-    
+
     for (final session in sessions) {
       final sessionDate = DateTime.parse(session['session_date']);
       final monthStr = months[sessionDate.month - 1];
-      
+
       if (monthlyCount.containsKey(monthStr)) {
         monthlyCount[monthStr] = monthlyCount[monthStr]! + 1;
       }
     }
-    
+
     return monthlyCount.entries
         .map((entry) => ChartData(label: entry.key, value: entry.value))
         .toList();
@@ -310,7 +342,7 @@ class StatisticsProvider with ChangeNotifier {
       // Count sessions per tutor
       final Map<String, int> tutorCount = {};
       final Map<String, String> tutorNames = {};
-      
+
       for (final session in tutorSessions) {
         final tutorId = session['tutor_id'];
         final tutorName = session['tutor']['name'];

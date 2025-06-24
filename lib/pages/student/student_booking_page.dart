@@ -1,4 +1,3 @@
-// pages/student/student_booking_page.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/booking_provider.dart';
@@ -24,6 +23,11 @@ class _StudentBookingPageState extends State<StudentBookingPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        _loadBookings(); 
+      }
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadBookings();
     });
@@ -110,7 +114,8 @@ class _StudentBookingPageState extends State<StudentBookingPage>
                 child: BookingCard(
                   booking: booking,
                   onTap: () => _showBookingDetails(booking),
-                  showStudentInfo: false, // For students, we don't need to show student info
+                  showStudentInfo:
+                      false, // For students, we don't need to show student info
                 ),
               );
             },
@@ -146,11 +151,7 @@ class _StudentBookingPageState extends State<StudentBookingPage>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            icon,
-            size: 64,
-            color: AppColors.textHint,
-          ),
+          Icon(icon, size: 64, color: AppColors.textHint),
           SizedBox(height: 16),
           Text(
             message,
@@ -209,9 +210,7 @@ class _StudentBookingPageState extends State<StudentBookingPage>
                 // Title
                 Text(
                   'Detail Booking',
-                  style: AppTextStyles.h5.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: AppTextStyles.h5.copyWith(fontWeight: FontWeight.bold),
                 ),
                 SizedBox(height: 20),
 
@@ -233,12 +232,17 @@ class _StudentBookingPageState extends State<StudentBookingPage>
                 SizedBox(height: 20),
 
                 // Booking Info
-                _buildDetailRow('Tutor', booking.tutorName.isNotEmpty ? booking.tutorName : 'Tidak diketahui'),
+                _buildDetailRow(
+                  'Tutor',
+                  booking.tutorName.isNotEmpty
+                      ? booking.tutorName
+                      : 'Tidak diketahui',
+                ),
                 _buildDetailRow('Mata Pelajaran', booking.subject),
                 _buildDetailRow('Tanggal', booking.formattedDate),
                 _buildDetailRow('Waktu', booking.formattedTime),
                 _buildDetailRow('Durasi', '${booking.durationMinutes} menit'),
-                
+
                 if (booking.notes != null && booking.notes!.isNotEmpty) ...[
                   SizedBox(height: 16),
                   Text(
@@ -368,9 +372,7 @@ class _StudentBookingPageState extends State<StudentBookingPage>
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(
-              foregroundColor: AppColors.error,
-            ),
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
             child: Text('Ya, Batalkan'),
           ),
         ],
@@ -380,7 +382,7 @@ class _StudentBookingPageState extends State<StudentBookingPage>
     if (confirmed == true) {
       final bookingProvider = context.read<BookingProvider>();
       final success = await bookingProvider.cancelBooking(booking.id);
-      
+
       if (success) {
         Navigator.of(context).pop(); // Close bottom sheet
         ScaffoldMessenger.of(context).showSnackBar(
@@ -392,7 +394,9 @@ class _StudentBookingPageState extends State<StudentBookingPage>
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(bookingProvider.errorMessage ?? 'Gagal membatalkan booking'),
+            content: Text(
+              bookingProvider.errorMessage ?? 'Gagal membatalkan booking',
+            ),
             backgroundColor: AppColors.error,
           ),
         );
@@ -405,9 +409,7 @@ class _StudentBookingPageState extends State<StudentBookingPage>
     // Could be chat, phone, or email
     Navigator.of(context).pop(); // Close bottom sheet
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Fitur hubungi tutor akan segera hadir'),
-      ),
+      SnackBar(content: Text('Fitur hubungi tutor akan segera hadir')),
     );
   }
 }

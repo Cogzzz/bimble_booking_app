@@ -1,4 +1,3 @@
-// services/statistics_service.dart
 import '../models/statistics_model.dart';
 import '../core/constants.dart';
 import 'supabase_service.dart';
@@ -6,7 +5,6 @@ import 'supabase_service.dart';
 class StatisticsService {
   final SupabaseService _supabaseService = SupabaseService();
 
-  // Get comprehensive tutor statistics
   Future<TutorStatistics> getTutorStatistics(String tutorId) async {
     try {
       // Get all sessions for tutor
@@ -31,15 +29,23 @@ class StatisticsService {
 
       // Calculate basic statistics
       final totalSessions = sessions.length;
-      final totalHours = sessions.fold(0.0, (sum, session) => 
-          sum + (session['duration_minutes'] ?? 0) / 60.0);
-      
-      final presentSessions = sessions.where((s) => s['attendance'] == 'present').length;
-      final attendanceRate = totalSessions > 0 ? (presentSessions / totalSessions) * 100 : 0.0;
-      
+      final totalHours = sessions.fold(
+        0.0,
+        (sum, session) => sum + (session['duration_minutes'] ?? 0) / 60.0,
+      );
+
+      final presentSessions = sessions
+          .where((s) => s['attendance'] == 'present')
+          .length;
+      final attendanceRate = totalSessions > 0
+          ? (presentSessions / totalSessions) * 100
+          : 0.0;
+
       final ratedSessions = sessions.where((s) => s['rating'] != null).toList();
-      final averageRating = ratedSessions.isNotEmpty ? 
-          ratedSessions.fold(0.0, (sum, s) => sum + (s['rating'] ?? 0)) / ratedSessions.length : 0.0;
+      final averageRating = ratedSessions.isNotEmpty
+          ? ratedSessions.fold(0.0, (sum, s) => sum + (s['rating'] ?? 0)) /
+                ratedSessions.length
+          : 0.0;
 
       // Time-based statistics
       final now = DateTime.now();
@@ -68,11 +74,16 @@ class StatisticsService {
       final monthlyData = _calculateMonthlyData(sessions);
 
       // Tutor-specific statistics
-      final uniqueStudents = sessions.map((s) => s['student_id']).toSet().length;
+      final uniqueStudents = sessions
+          .map((s) => s['student_id'])
+          .toSet()
+          .length;
       final hourlyRate = tutorProfile?['hourly_rate'] ?? 0;
       final totalEarnings = totalHours * hourlyRate;
-      final pendingBookings = bookings.where((b) => b['status'] == 'pending').length;
-      
+      final pendingBookings = bookings
+          .where((b) => b['status'] == 'pending')
+          .length;
+
       final recentStudents = await _getRecentStudentNames(tutorId);
 
       return TutorStatistics(
@@ -91,11 +102,12 @@ class StatisticsService {
         recentStudents: recentStudents,
       );
     } catch (e) {
-      throw Exception('Gagal mengambil statistik tutor: ${_supabaseService.handleError(e)}');
+      throw Exception(
+        'Gagal mengambil statistik tutor: ${_supabaseService.handleError(e)}',
+      );
     }
   }
 
-  // Get comprehensive student statistics
   Future<StudentStatistics> getStudentStatistics(String studentId) async {
     try {
       // Get all sessions for student
@@ -122,15 +134,23 @@ class StatisticsService {
 
       // Calculate basic statistics
       final totalSessions = sessions.length;
-      final totalHours = sessions.fold(0.0, (sum, session) => 
-          sum + (session['duration_minutes'] ?? 0) / 60.0);
-      
-      final presentSessions = sessions.where((s) => s['attendance'] == 'present').length;
-      final attendanceRate = totalSessions > 0 ? (presentSessions / totalSessions) * 100 : 0.0;
-      
+      final totalHours = sessions.fold(
+        0.0,
+        (sum, session) => sum + (session['duration_minutes'] ?? 0) / 60.0,
+      );
+
+      final presentSessions = sessions
+          .where((s) => s['attendance'] == 'present')
+          .length;
+      final attendanceRate = totalSessions > 0
+          ? (presentSessions / totalSessions) * 100
+          : 0.0;
+
       final ratedSessions = sessions.where((s) => s['rating'] != null).toList();
-      final averageRating = ratedSessions.isNotEmpty ? 
-          ratedSessions.fold(0.0, (sum, s) => sum + (s['rating'] ?? 0)) / ratedSessions.length : 0.0;
+      final averageRating = ratedSessions.isNotEmpty
+          ? ratedSessions.fold(0.0, (sum, s) => sum + (s['rating'] ?? 0)) /
+                ratedSessions.length
+          : 0.0;
 
       // Time-based statistics
       final now = DateTime.now();
@@ -161,7 +181,7 @@ class StatisticsService {
       // Student-specific statistics
       final uniqueTutors = sessions.map((s) => s['tutor_id']).toSet().length;
       final favoriteTutors = await _getFavoriteTutorNames(studentId);
-      
+
       // Convert upcoming bookings to UpcomingSession
       final upcomingSessions = upcomingBookings.map((booking) {
         final bookingDate = DateTime.parse(booking['booking_date']);
@@ -173,7 +193,7 @@ class StatisticsService {
           int.parse(startTime.split(':')[0]),
           int.parse(startTime.split(':')[1]),
         );
-        
+
         return UpcomingSession(
           id: booking['id'],
           tutorName: booking['tutor']?['name'] ?? '',
@@ -199,7 +219,9 @@ class StatisticsService {
         upcomingSessions: upcomingSessions,
       );
     } catch (e) {
-      throw Exception('Gagal mengambil statistik student: ${_supabaseService.handleError(e)}');
+      throw Exception(
+        'Gagal mengambil statistik student: ${_supabaseService.handleError(e)}',
+      );
     }
   }
 
@@ -207,24 +229,24 @@ class StatisticsService {
   List<ChartData> _calculateWeeklyData(List<Map<String, dynamic>> sessions) {
     final Map<String, int> weeklyCount = {};
     final now = DateTime.now();
-    
+
     // Initialize last 7 days
     for (int i = 6; i >= 0; i--) {
       final date = now.subtract(Duration(days: i));
       final dateKey = '${date.day}/${date.month}';
       weeklyCount[dateKey] = 0;
     }
-    
+
     // Count sessions per day
     for (final session in sessions) {
       final sessionDate = DateTime.parse(session['session_date']);
       final dateKey = '${sessionDate.day}/${sessionDate.month}';
-      
+
       if (weeklyCount.containsKey(dateKey)) {
         weeklyCount[dateKey] = weeklyCount[dateKey]! + 1;
       }
     }
-    
+
     return weeklyCount.entries
         .map((entry) => ChartData(label: entry.key, value: entry.value))
         .toList();
@@ -233,9 +255,21 @@ class StatisticsService {
   // Calculate monthly chart data
   List<ChartData> _calculateMonthlyData(List<Map<String, dynamic>> sessions) {
     final Map<String, int> monthlyCount = {};
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 
-                   'Jul', 'Agt', 'Sep', 'Okt', 'Nov', 'Des'];
-    
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'Mei',
+      'Jun',
+      'Jul',
+      'Agt',
+      'Sep',
+      'Okt',
+      'Nov',
+      'Des',
+    ];
+
     // Initialize last 6 months
     final now = DateTime.now();
     for (int i = 5; i >= 0; i--) {
@@ -243,17 +277,17 @@ class StatisticsService {
       final monthKey = months[monthDate.month - 1];
       monthlyCount[monthKey] = 0;
     }
-    
+
     // Count sessions per month
     for (final session in sessions) {
       final sessionDate = DateTime.parse(session['session_date']);
       final monthKey = months[sessionDate.month - 1];
-      
+
       if (monthlyCount.containsKey(monthKey)) {
         monthlyCount[monthKey] = monthlyCount[monthKey]! + 1;
       }
     }
-    
+
     return monthlyCount.entries
         .map((entry) => ChartData(label: entry.key, value: entry.value))
         .toList();
@@ -301,7 +335,7 @@ class StatisticsService {
       // Count sessions per tutor
       final Map<String, int> tutorCount = {};
       final Map<String, String> tutorNames = {};
-      
+
       for (final session in tutorSessions) {
         final tutorId = session['tutor_id'];
         final tutorName = session['tutor']?['name'] ?? '';
@@ -327,7 +361,9 @@ class StatisticsService {
   // Get global app statistics (for admin)
   Future<Map<String, dynamic>> getGlobalStatistics() async {
     try {
-      final totalUsers = await _supabaseService.count(table: AppConstants.usersTable);
+      final totalUsers = await _supabaseService.count(
+        table: AppConstants.usersTable,
+      );
       final totalStudents = await _supabaseService.count(
         table: AppConstants.usersTable,
         filters: {'role': AppConstants.roleStudent},
@@ -336,13 +372,21 @@ class StatisticsService {
         table: AppConstants.usersTable,
         filters: {'role': AppConstants.roleTutor},
       );
-      final totalSessions = await _supabaseService.count(table: AppConstants.sessionsTable);
-      final totalBookings = await _supabaseService.count(table: AppConstants.bookingsTable);
+      final totalSessions = await _supabaseService.count(
+        table: AppConstants.sessionsTable,
+      );
+      final totalBookings = await _supabaseService.count(
+        table: AppConstants.bookingsTable,
+      );
 
       // This month statistics
       final now = DateTime.now();
-      final thisMonthStart = DateTime(now.year, now.month, 1).toIso8601String().split('T')[0];
-      
+      final thisMonthStart = DateTime(
+        now.year,
+        now.month,
+        1,
+      ).toIso8601String().split('T')[0];
+
       final thisMonthSessions = await _supabaseService.count(
         table: AppConstants.sessionsTable,
         filters: {'session_date': 'gte.$thisMonthStart'},
@@ -363,7 +407,9 @@ class StatisticsService {
         'this_month_bookings': thisMonthBookings,
       };
     } catch (e) {
-      throw Exception('Gagal mengambil global statistics: ${_supabaseService.handleError(e)}');
+      throw Exception(
+        'Gagal mengambil global statistics: ${_supabaseService.handleError(e)}',
+      );
     }
   }
 
@@ -387,7 +433,9 @@ class StatisticsService {
 
       return Map.fromEntries(sortedSubjects);
     } catch (e) {
-      throw Exception('Gagal mengambil subject popularity: ${_supabaseService.handleError(e)}');
+      throw Exception(
+        'Gagal mengambil subject popularity: ${_supabaseService.handleError(e)}',
+      );
     }
   }
 
@@ -410,24 +458,36 @@ class StatisticsService {
           .gte('session_date', startDate.toIso8601String().split('T')[0])
           .lte('session_date', endDate.toIso8601String().split('T')[0])
           .then((response) {
-            var query = response as List<Map<String, dynamic>>;
+            var query = response;
             if (userId != null) {
-              query = query.where((session) => 
-                  session[isStudent ? 'student_id' : 'tutor_id'] == userId).toList();
+              query = query
+                  .where(
+                    (session) =>
+                        session[isStudent ? 'student_id' : 'tutor_id'] ==
+                        userId,
+                  )
+                  .toList();
             }
             return query;
           });
-
       final totalSessions = sessions.length;
-      final totalHours = sessions.fold(0.0, (sum, session) => 
-          sum + (session['duration_minutes'] ?? 0) / 60.0);
-      
-      final presentSessions = sessions.where((s) => s['attendance'] == 'present').length;
-      final attendanceRate = totalSessions > 0 ? (presentSessions / totalSessions) * 100 : 0.0;
-      
+      final totalHours = sessions.fold(
+        0.0,
+        (sum, session) => sum + (session['duration_minutes'] ?? 0) / 60.0,
+      );
+
+      final presentSessions = sessions
+          .where((s) => s['attendance'] == 'present')
+          .length;
+      final attendanceRate = totalSessions > 0
+          ? (presentSessions / totalSessions) * 100
+          : 0.0;
+
       final ratedSessions = sessions.where((s) => s['rating'] != null).toList();
-      final averageRating = ratedSessions.isNotEmpty ? 
-          ratedSessions.fold(0.0, (sum, s) => sum + (s['rating'] ?? 0)) / ratedSessions.length : 0.0;
+      final averageRating = ratedSessions.isNotEmpty
+          ? ratedSessions.fold(0.0, (sum, s) => sum + (s['rating'] ?? 0)) /
+                ratedSessions.length
+          : 0.0;
 
       // Subject breakdown
       final Map<String, int> subjectBreakdown = {};
@@ -445,7 +505,9 @@ class StatisticsService {
         'period': '${_formatDate(startDate)} - ${_formatDate(endDate)}',
       };
     } catch (e) {
-      throw Exception('Gagal mengambil performance metrics: ${_supabaseService.handleError(e)}');
+      throw Exception(
+        'Gagal mengambil performance metrics: ${_supabaseService.handleError(e)}',
+      );
     }
   }
 
@@ -461,7 +523,7 @@ class StatisticsService {
         table: AppConstants.tutorsTable,
         filters: {'user_id': tutorId},
       );
-      
+
       final hourlyRate = tutorProfile?['hourly_rate'] ?? 0;
 
       // Get sessions in date range
@@ -473,20 +535,24 @@ class StatisticsService {
           .lte('session_date', endDate.toIso8601String().split('T')[0]);
 
       final totalSessions = sessions.length;
-      final totalHours = sessions.fold(0.0, (sum, session) => 
-          sum + (session['duration_minutes'] ?? 0) / 60.0);
+      final totalHours = sessions.fold(
+        0.0,
+        (sum, session) => sum + (session['duration_minutes'] ?? 0) / 60.0,
+      );
       final totalEarnings = totalHours * hourlyRate;
 
       // Monthly breakdown
       final Map<String, double> monthlyEarnings = {};
       final Map<String, int> monthlySessions = {};
-      
+
       for (final session in sessions) {
         final sessionDate = DateTime.parse(session['session_date']);
-        final monthKey = '${sessionDate.year}-${sessionDate.month.toString().padLeft(2, '0')}';
+        final monthKey =
+            '${sessionDate.year}-${sessionDate.month.toString().padLeft(2, '0')}';
         final sessionHours = (session['duration_minutes'] ?? 0) / 60.0;
-        
-        monthlyEarnings[monthKey] = (monthlyEarnings[monthKey] ?? 0) + (sessionHours * hourlyRate);
+
+        monthlyEarnings[monthKey] =
+            (monthlyEarnings[monthKey] ?? 0) + (sessionHours * hourlyRate);
         monthlySessions[monthKey] = (monthlySessions[monthKey] ?? 0) + 1;
       }
 
@@ -495,7 +561,8 @@ class StatisticsService {
       for (final session in sessions) {
         final subject = session['subject'] ?? '';
         final sessionHours = (session['duration_minutes'] ?? 0) / 60.0;
-        subjectEarnings[subject] = (subjectEarnings[subject] ?? 0) + (sessionHours * hourlyRate);
+        subjectEarnings[subject] =
+            (subjectEarnings[subject] ?? 0) + (sessionHours * hourlyRate);
       }
 
       return {
@@ -509,7 +576,9 @@ class StatisticsService {
         'period': '${_formatDate(startDate)} - ${_formatDate(endDate)}',
       };
     } catch (e) {
-      throw Exception('Gagal mengambil earnings report: ${_supabaseService.handleError(e)}');
+      throw Exception(
+        'Gagal mengambil earnings report: ${_supabaseService.handleError(e)}',
+      );
     }
   }
 
@@ -531,18 +600,21 @@ class StatisticsService {
       );
 
       final totalSessions = sessions.length;
-      final totalHours = sessions.fold(0.0, (sum, session) => 
-          sum + (session['duration_minutes'] ?? 0) / 60.0);
+      final totalHours = sessions.fold(
+        0.0,
+        (sum, session) => sum + (session['duration_minutes'] ?? 0) / 60.0,
+      );
 
       // Progress over time (monthly)
       final Map<String, int> monthlyProgress = {};
       final Map<String, double> monthlyHours = {};
-      
+
       for (final session in sessions) {
         final sessionDate = DateTime.parse(session['session_date']);
-        final monthKey = '${sessionDate.year}-${sessionDate.month.toString().padLeft(2, '0')}';
+        final monthKey =
+            '${sessionDate.year}-${sessionDate.month.toString().padLeft(2, '0')}';
         final sessionHours = (session['duration_minutes'] ?? 0) / 60.0;
-        
+
         monthlyProgress[monthKey] = (monthlyProgress[monthKey] ?? 0) + 1;
         monthlyHours[monthKey] = (monthlyHours[monthKey] ?? 0) + sessionHours;
       }
@@ -550,7 +622,7 @@ class StatisticsService {
       // Rating trend
       final ratedSessions = sessions.where((s) => s['rating'] != null).toList();
       final List<Map<String, dynamic>> ratingTrend = [];
-      
+
       for (final session in ratedSessions) {
         ratingTrend.add({
           'date': session['session_date'],
@@ -560,8 +632,12 @@ class StatisticsService {
       }
 
       // Attendance pattern
-      final presentCount = sessions.where((s) => s['attendance'] == 'present').length;
-      final absentCount = sessions.where((s) => s['attendance'] == 'absent').length;
+      final presentCount = sessions
+          .where((s) => s['attendance'] == 'present')
+          .length;
+      final absentCount = sessions
+          .where((s) => s['attendance'] == 'absent')
+          .length;
       final lateCount = sessions.where((s) => s['attendance'] == 'late').length;
 
       return {
@@ -578,7 +654,9 @@ class StatisticsService {
         'subject_filter': subject,
       };
     } catch (e) {
-      throw Exception('Gagal mengambil learning progress: ${_supabaseService.handleError(e)}');
+      throw Exception(
+        'Gagal mengambil learning progress: ${_supabaseService.handleError(e)}',
+      );
     }
   }
 
@@ -634,7 +712,9 @@ class StatisticsService {
         'user_type': isStudent ? 'student' : 'tutor',
       };
     } catch (e) {
-      throw Exception('Gagal mengambil dashboard summary: ${_supabaseService.handleError(e)}');
+      throw Exception(
+        'Gagal mengambil dashboard summary: ${_supabaseService.handleError(e)}',
+      );
     }
   }
 }

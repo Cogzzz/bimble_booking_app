@@ -12,12 +12,9 @@ import '../../widgets/common/loading_widget.dart';
 import '../shared/main_navigation.dart';
 
 class TutorSetupPage extends StatefulWidget {
-  final VoidCallback? onSetupComplete; // Add this parameter
+  final VoidCallback? onSetupComplete;
 
-  const TutorSetupPage({
-    Key? key,
-    this.onSetupComplete, // Add this parameter
-  }) : super(key: key);
+  const TutorSetupPage({Key? key, this.onSetupComplete}) : super(key: key);
 
   @override
   State<TutorSetupPage> createState() => _TutorSetupPageState();
@@ -97,7 +94,6 @@ class _TutorSetupPageState extends State<TutorSetupPage> {
     });
 
     if (success) {
-      // PENTING: Update tutor setup status di AuthProvider
       authProvider.completeTutorSetup();
 
       // Show success message
@@ -109,7 +105,6 @@ class _TutorSetupPageState extends State<TutorSetupPage> {
         ),
       );
 
-      // Tunggu sebentar agar snackbar terlihat, lalu navigasi
       await Future.delayed(Duration(milliseconds: 500));
 
       // Navigasi ke MainNavigation - akan otomatis ke dashboard tutor
@@ -420,9 +415,7 @@ class _TutorSetupPageState extends State<TutorSetupPage> {
           maxLines: 6,
           validator: AppValidators.validateBio,
           onChanged: (value) {
-            setState(() {
-              // Trigger rebuild to update character count
-            });
+            setState(() {});
           },
         ),
 

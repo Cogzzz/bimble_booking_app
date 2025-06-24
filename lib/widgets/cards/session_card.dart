@@ -1,8 +1,6 @@
-// widgets/cards/session_card.dart
 import 'package:flutter/material.dart';
 import '../../models/session_model.dart';
 import '../../core/theme.dart';
-import '../../core/utils.dart';
 
 class SessionCard extends StatelessWidget {
   final SessionModel session;

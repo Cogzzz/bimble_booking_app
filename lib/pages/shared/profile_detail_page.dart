@@ -1,4 +1,3 @@
-// pages/shared/profile_detail_page.dart
 import 'package:flutter/material.dart';
 import '../../models/user_model.dart';
 import '../../models/tutor_model.dart';

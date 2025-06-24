@@ -1,4 +1,3 @@
-// widgets/cards/tutor_card.dart
 import 'package:flutter/material.dart';
 import '../../models/tutor_model.dart';
 import '../../core/theme.dart';

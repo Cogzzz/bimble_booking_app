@@ -1,4 +1,3 @@
-// widgets/common/profile_card.dart
 import 'package:flutter/material.dart';
 import '../../models/user_model.dart';
 import '../../models/tutor_model.dart';
@@ -38,7 +37,7 @@ class ProfileCard extends StatelessWidget {
           padding: padding ?? EdgeInsets.all(16),
           child: Column(
             children: [
-              // Avatar and basic info
+              // Avatar
               Row(
                 children: [
                   _buildAvatar(),
@@ -303,7 +302,6 @@ class ProfileCard extends StatelessWidget {
   }
 }
 
-// Compact version for lists
 class CompactProfileCard extends StatelessWidget {
   final UserModel user;
   final TutorModel? tutor;
@@ -395,7 +393,6 @@ class CompactProfileCard extends StatelessWidget {
   }
 }
 
-// Profile header for detail pages
 class ProfileHeader extends StatelessWidget {
   final UserModel user;
   final TutorModel? tutor;

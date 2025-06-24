@@ -1,10 +1,9 @@
-// core/constants.dart
 class AppConstants {
   // App Info
   static const String appName = 'TutoringApp';
   static const String appVersion = '1.0.0';
 
-  // Supabase Config - GANTI DENGAN CREDENTIALS ANDA
+  // Supabase Config 
   static const String supabaseUrl = 'https://nbvpvbfcgaxxaoczhmmq.supabase.co';
   static const String supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5idnB2YmZjZ2F4eGFvY3pobW1xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2NzgyNTAsImV4cCI6MjA2NjI1NDI1MH0.Onet0vnE97lCdez8brfAvtLUaFzfstbFNXVNKy6XulU';
 

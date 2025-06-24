@@ -1,4 +1,4 @@
-// pages/shared/main_navigation.dart
+// pages/shared/main_navigation.dart - Updated dengan navigasi programatik
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
@@ -8,6 +8,7 @@ import '../../core/constants.dart';
 // Student Pages
 import '../student/student_home_page.dart';
 import '../student/search_tutor_page.dart';
+import '../student/student_booking_page.dart'; 
 import '../student/session_history_page.dart';
 import '../student/student_profile_page.dart';
 
@@ -21,11 +22,48 @@ class MainNavigation extends StatefulWidget {
   const MainNavigation({Key? key}) : super(key: key);
 
   @override
-  State<MainNavigation> createState() => _MainNavigationState();
+  State<MainNavigation> createState() => MainNavigationState();
 }
 
-class _MainNavigationState extends State<MainNavigation> {
+class MainNavigationState extends State<MainNavigation> {
   int _currentIndex = 0;
+
+  // Method publik untuk navigasi programatik
+  void navigateToTab(int index) {
+    if (index >= 0 && index < _getMaxTabIndex()) {
+      setState(() {
+        _currentIndex = index;
+      });
+    }
+  }
+
+  // Method untuk mendapatkan index maksimum berdasarkan role
+  int _getMaxTabIndex() {
+    final authProvider = context.read<AuthProvider>();
+    return authProvider.isStudent ? 5 : 4; // Student: 5 tabs, Tutor: 4 tabs
+  }
+
+  // Method untuk navigasi ke halaman booking dengan tab tertentu
+  void navigateToBookingTab(int tabIndex) {
+    final authProvider = context.read<AuthProvider>();
+    if (authProvider.isStudent) {
+      // Navigasi ke tab booking (index 2)
+      navigateToTab(2);
+      
+      // Delay untuk memastikan halaman sudah ter-render
+      Future.delayed(Duration(milliseconds: 100), () {
+        final studentBookingContext = context;
+        // Cari StudentBookingPage di widget tree dan arahkan ke tab yang diminta
+        _navigateToBookingSubTab(studentBookingContext, tabIndex);
+      });
+    }
+  }
+
+  void _navigateToBookingSubTab(BuildContext context, int tabIndex) {
+    // Implementasi untuk navigasi ke sub-tab dalam StudentBookingPage
+    // Ini akan dipanggil dari StudentHomePage melalui callback atau global state
+    // Untuk saat ini, kita akan menggunakan pendekatan yang lebih sederhana
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,11 +83,7 @@ class _MainNavigationState extends State<MainNavigation> {
           ),
           bottomNavigationBar: BottomNavigationBar(
             currentIndex: _currentIndex,
-            onTap: (index) {
-              setState(() {
-                _currentIndex = index;
-              });
-            },
+            onTap: navigateToTab, // Menggunakan method navigateToTab
             type: BottomNavigationBarType.fixed,
             selectedItemColor: AppColors.primary,
             unselectedItemColor: AppColors.textHint,
@@ -62,10 +96,11 @@ class _MainNavigationState extends State<MainNavigation> {
     );
   }
 
-  // Student Pages
+  // Student Pages - UPDATED: Added booking page
   List<Widget> get _studentPages => [
     const StudentHomePage(),
     const SearchTutorPage(),
+    const StudentBookingPage(), // NEW: Booking status page
     const SessionHistoryPage(),
     const StudentProfilePage(),
   ];
@@ -78,7 +113,7 @@ class _MainNavigationState extends State<MainNavigation> {
     const TutorProfilePage(),
   ];
 
-  // Student Navigation Items
+  // Student Navigation Items - UPDATED: Added booking tab
   List<BottomNavigationBarItem> get _studentNavItems => [
     BottomNavigationBarItem(
       icon: Icon(Icons.home_outlined),
@@ -89,6 +124,11 @@ class _MainNavigationState extends State<MainNavigation> {
       icon: Icon(Icons.search_outlined),
       activeIcon: Icon(Icons.search),
       label: 'Cari Tutor',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.bookmark_outlined), // NEW: Booking icon
+      activeIcon: Icon(Icons.bookmark),
+      label: 'Booking', // NEW: Booking tab
     ),
     BottomNavigationBarItem(
       icon: Icon(Icons.history_outlined),
@@ -125,4 +165,32 @@ class _MainNavigationState extends State<MainNavigation> {
       label: 'Profil',
     ),
   ];
+}
+
+// Global Key untuk MainNavigation
+final GlobalKey<MainNavigationState> mainNavigationKey = GlobalKey<MainNavigationState>();
+
+// Extension untuk navigasi dari child widgets
+extension NavigationHelper on BuildContext {
+  // Navigasi ke tab tertentu
+  void navigateToMainTab(int index) {
+    final mainNavState = findAncestorStateOfType<MainNavigationState>();
+    mainNavState?.navigateToTab(index);
+  }
+
+  // Navigasi ke halaman booking dengan tab tertentu
+  void navigateToBookingWithTab(int tabIndex) {
+    final mainNavState = findAncestorStateOfType<MainNavigationState>();
+    mainNavState?.navigateToBookingTab(tabIndex);
+  }
+
+  // Navigasi ke halaman search tutor
+  void navigateToSearchTutor() {
+    navigateToMainTab(1); // Index 1 untuk SearchTutorPage
+  }
+
+  // Navigasi ke halaman session history
+  void navigateToSessionHistory() {
+    navigateToMainTab(3); // Index 3 untuk SessionHistoryPage
+  }
 }

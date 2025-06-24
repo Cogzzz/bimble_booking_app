@@ -9,10 +9,11 @@ import '../../core/validators.dart';
 import '../../widgets/common/custom_text_field.dart';
 import '../../widgets/common/custom_button.dart';
 import '../../widgets/common/loading_widget.dart';
+import '../shared/main_navigation.dart';
 
 class TutorSetupPage extends StatefulWidget {
   final VoidCallback? onSetupComplete; // Add this parameter
-  
+
   const TutorSetupPage({
     Key? key,
     this.onSetupComplete, // Add this parameter
@@ -63,8 +64,8 @@ class _TutorSetupPageState extends State<TutorSetupPage> {
       case 0: // Subjects
         return _selectedSubjects.isNotEmpty;
       case 1: // Experience and Rate
-        return _experienceController.text.isNotEmpty && 
-               _hourlyRateController.text.isNotEmpty;
+        return _experienceController.text.isNotEmpty &&
+            _hourlyRateController.text.isNotEmpty;
       case 2: // Bio
         return _bioController.text.trim().length >= 20;
       default:
@@ -96,6 +97,9 @@ class _TutorSetupPageState extends State<TutorSetupPage> {
     });
 
     if (success) {
+      // PENTING: Update tutor setup status di AuthProvider
+      authProvider.completeTutorSetup();
+
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -105,14 +109,22 @@ class _TutorSetupPageState extends State<TutorSetupPage> {
         ),
       );
 
-      // Call the callback if provided
-      if (widget.onSetupComplete != null) {
-        widget.onSetupComplete!();
+      // Tunggu sebentar agar snackbar terlihat, lalu navigasi
+      await Future.delayed(Duration(milliseconds: 500));
+
+      // Navigasi ke MainNavigation - akan otomatis ke dashboard tutor
+      if (mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const MainNavigation()),
+          (route) => false,
+        );
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(tutorProvider.errorMessage ?? 'Gagal membuat profil tutor'),
+          content: Text(
+            tutorProvider.errorMessage ?? 'Gagal membuat profil tutor',
+          ),
           backgroundColor: AppColors.error,
         ),
       );
@@ -133,18 +145,15 @@ class _TutorSetupPageState extends State<TutorSetupPage> {
               children: [
                 // Progress Indicator
                 _buildProgressIndicator(),
-                
+
                 // Content
                 Expanded(
                   child: SingleChildScrollView(
                     padding: EdgeInsets.all(24),
-                    child: Form(
-                      key: _formKey,
-                      child: _buildCurrentStep(),
-                    ),
+                    child: Form(key: _formKey, child: _buildCurrentStep()),
                   ),
                 ),
-                
+
                 // Navigation Buttons
                 _buildNavigationButtons(),
               ],
@@ -177,7 +186,9 @@ class _TutorSetupPageState extends State<TutorSetupPage> {
               Expanded(
                 child: Container(
                   height: 2,
-                  color: i < _currentStep ? AppColors.tutorColor : AppColors.border,
+                  color: i < _currentStep
+                      ? AppColors.tutorColor
+                      : AppColors.border,
                 ),
               ),
           ],
@@ -196,7 +207,9 @@ class _TutorSetupPageState extends State<TutorSetupPage> {
       height: 32,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: isCompleted || isActive ? AppColors.tutorColor : AppColors.border,
+        color: isCompleted || isActive
+            ? AppColors.tutorColor
+            : AppColors.border,
       ),
       child: Center(
         child: isCompleted
@@ -231,9 +244,7 @@ class _TutorSetupPageState extends State<TutorSetupPage> {
       children: [
         Text(
           'Pilih Mata Pelajaran',
-          style: AppTextStyles.h4.copyWith(
-            color: AppColors.tutorColor,
-          ),
+          style: AppTextStyles.h4.copyWith(color: AppColors.tutorColor),
         ),
         SizedBox(height: 8),
         Text(
@@ -243,7 +254,7 @@ class _TutorSetupPageState extends State<TutorSetupPage> {
           ),
         ),
         SizedBox(height: 24),
-        
+
         Wrap(
           spacing: 12,
           runSpacing: 12,
@@ -265,12 +276,14 @@ class _TutorSetupPageState extends State<TutorSetupPage> {
               selectedColor: AppColors.tutorColor.withOpacity(0.2),
               checkmarkColor: AppColors.tutorColor,
               labelStyle: TextStyle(
-                color: isSelected ? AppColors.tutorColor : AppColors.textPrimary,
+                color: isSelected
+                    ? AppColors.tutorColor
+                    : AppColors.textPrimary,
               ),
             );
           }).toList(),
         ),
-        
+
         if (_selectedSubjects.isNotEmpty) ...[
           SizedBox(height: 24),
           Text(
@@ -305,9 +318,7 @@ class _TutorSetupPageState extends State<TutorSetupPage> {
       children: [
         Text(
           'Pengalaman & Tarif',
-          style: AppTextStyles.h4.copyWith(
-            color: AppColors.tutorColor,
-          ),
+          style: AppTextStyles.h4.copyWith(color: AppColors.tutorColor),
         ),
         SizedBox(height: 8),
         Text(
@@ -317,29 +328,35 @@ class _TutorSetupPageState extends State<TutorSetupPage> {
           ),
         ),
         SizedBox(height: 32),
-        
+
         CustomTextField(
           controller: _experienceController,
           label: 'Pengalaman Mengajar (Tahun)',
           hintText: 'Contoh: 2',
           prefixIcon: Icons.work_outline,
           keyboardType: TextInputType.number,
+          onChanged: (value) {
+            setState(() {});
+          },
           validator: AppValidators.validateExperience,
         ),
-        
+
         SizedBox(height: 20),
-        
+
         CustomTextField(
           controller: _hourlyRateController,
           label: 'Tarif per Jam (Rp)',
           hintText: 'Contoh: 75000',
           prefixIcon: Icons.payments_outlined,
           keyboardType: TextInputType.number,
+          onChanged: (value) {
+            setState(() {});
+          },
           validator: AppValidators.validateHourlyRate,
         ),
-        
+
         SizedBox(height: 16),
-        
+
         Container(
           padding: EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -384,9 +401,7 @@ class _TutorSetupPageState extends State<TutorSetupPage> {
       children: [
         Text(
           'Perkenalkan Diri Anda',
-          style: AppTextStyles.h4.copyWith(
-            color: AppColors.tutorColor,
-          ),
+          style: AppTextStyles.h4.copyWith(color: AppColors.tutorColor),
         ),
         SizedBox(height: 8),
         Text(
@@ -396,11 +411,12 @@ class _TutorSetupPageState extends State<TutorSetupPage> {
           ),
         ),
         SizedBox(height: 32),
-        
+
         CustomTextField(
           controller: _bioController,
           label: 'Bio/Deskripsi Diri',
-          hintText: 'Ceritakan tentang diri Anda, metode mengajar, dan hal menarik lainnya...',
+          hintText:
+              'Ceritakan tentang diri Anda, metode mengajar, dan hal menarik lainnya...',
           maxLines: 6,
           validator: AppValidators.validateBio,
           onChanged: (value) {
@@ -409,33 +425,33 @@ class _TutorSetupPageState extends State<TutorSetupPage> {
             });
           },
         ),
-        
+
         SizedBox(height: 8),
-        
+
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
               '${_bioController.text.length}/500 karakter',
               style: AppTextStyles.bodySmall.copyWith(
-                color: _bioController.text.length >= 20 
-                    ? AppColors.success 
+                color: _bioController.text.length >= 20
+                    ? AppColors.success
                     : AppColors.textHint,
               ),
             ),
             Text(
               'Minimal 20 karakter',
               style: AppTextStyles.bodySmall.copyWith(
-                color: _bioController.text.length >= 20 
-                    ? AppColors.success 
+                color: _bioController.text.length >= 20
+                    ? AppColors.success
                     : AppColors.warning,
               ),
             ),
           ],
         ),
-        
+
         SizedBox(height: 24),
-        
+
         Container(
           padding: EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -464,9 +480,7 @@ class _TutorSetupPageState extends State<TutorSetupPage> {
                 '• Jelaskan metode mengajar yang unik\n'
                 '• Tambahkan prestasi atau sertifikat\n'
                 '• Gunakan bahasa yang ramah dan profesional',
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.info,
-                ),
+                style: AppTextStyles.bodySmall.copyWith(color: AppColors.info),
               ),
             ],
           ),
@@ -501,9 +515,9 @@ class _TutorSetupPageState extends State<TutorSetupPage> {
                 child: Text('Kembali'),
               ),
             ),
-          
+
           if (_currentStep > 0) SizedBox(width: 12),
-          
+
           Expanded(
             flex: _currentStep == 0 ? 1 : 1,
             child: CustomButton(

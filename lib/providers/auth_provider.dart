@@ -3,15 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
+import '../services/supabase_service.dart';
 import '../core/constants.dart';
 
 class AuthProvider with ChangeNotifier {
   final AuthService _authService = AuthService();
+  final SupabaseService _supabaseService = SupabaseService();
   
   UserModel? _currentUser;
   bool _isLoading = false;
   String? _errorMessage;
   bool _isLoggedIn = false;
+  bool _tutorSetupCompleted = false;
 
   // Getters
   UserModel? get currentUser => _currentUser;
@@ -20,6 +23,9 @@ class AuthProvider with ChangeNotifier {
   bool get isLoggedIn => _isLoggedIn;
   bool get isStudent => _currentUser?.isStudent ?? false;
   bool get isTutor => _currentUser?.isTutor ?? false;
+  
+  // Check if tutor needs setup (is tutor but hasn't completed setup)
+  bool get needsTutorSetup => isTutor && !_tutorSetupCompleted;
 
   // Constructor - Check if already logged in
   AuthProvider() {
@@ -47,11 +53,32 @@ class AuthProvider with ChangeNotifier {
             createdAt: DateTime.now(),
           );
           _isLoggedIn = true;
+          
+          // Check if tutor setup is completed
+          if (userRole == AppConstants.roleTutor) {
+            await _checkTutorSetupStatus(userId);
+          }
+          
           notifyListeners();
         }
       }
     } catch (e) {
       print('Error checking login status: $e');
+    }
+  }
+
+  // Check if tutor has completed setup
+  Future<void> _checkTutorSetupStatus(String userId) async {
+    try {
+      final tutorProfile = await _supabaseService.selectSingle(
+        table: AppConstants.tutorsTable,
+        filters: {'user_id': userId},
+      );
+      
+      _tutorSetupCompleted = tutorProfile != null;
+    } catch (e) {
+      _tutorSetupCompleted = false;
+      print('Error checking tutor setup: $e');
     }
   }
 
@@ -66,6 +93,12 @@ class AuthProvider with ChangeNotifier {
       if (user != null) {
         _currentUser = user;
         _isLoggedIn = true;
+        
+        // Check tutor setup status
+        if (user.isTutor) {
+          await _checkTutorSetupStatus(user.id);
+        }
+        
         await _saveUserData(user);
         _setLoading(false);
         return true;
@@ -104,6 +137,12 @@ class AuthProvider with ChangeNotifier {
       if (user != null) {
         _currentUser = user;
         _isLoggedIn = true;
+        
+        // For new tutors, setup is not completed yet
+        if (user.isTutor) {
+          _tutorSetupCompleted = false;
+        }
+        
         await _saveUserData(user);
         _setLoading(false);
         return true;
@@ -119,6 +158,12 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  // Complete tutor setup
+  void completeTutorSetup() {
+    _tutorSetupCompleted = true;
+    notifyListeners();
+  }
+
   // Logout
   Future<void> logout() async {
     _setLoading(true);
@@ -129,6 +174,7 @@ class AuthProvider with ChangeNotifier {
       
       _currentUser = null;
       _isLoggedIn = false;
+      _tutorSetupCompleted = false;
       _clearError();
       _setLoading(false);
     } catch (e) {
@@ -234,6 +280,12 @@ class AuthProvider with ChangeNotifier {
       final updatedUser = await _authService.getUserById(_currentUser!.id);
       if (updatedUser != null) {
         _currentUser = updatedUser;
+        
+        // Re-check tutor setup status
+        if (updatedUser.isTutor) {
+          await _checkTutorSetupStatus(updatedUser.id);
+        }
+        
         await _saveUserData(updatedUser);
         notifyListeners();
       }

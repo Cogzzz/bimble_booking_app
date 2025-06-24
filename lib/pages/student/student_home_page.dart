@@ -250,10 +250,10 @@ class _StudentHomePageState extends State<StudentHomePage> {
                                   vertical: 4,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: AppColors.secondary.withOpacity(0.2),
+                                  color: AppColors.secondary,
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
-                                    color: AppColors.secondary.withOpacity(0.3),
+                                    color: AppColors.secondary,
                                   ),
                                 ),
                                 child: Text(

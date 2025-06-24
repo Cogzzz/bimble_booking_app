@@ -1,4 +1,4 @@
-// services/auth_service.dart
+// services/auth_service.dart - Updated with tutor profile check
 import '../models/user_model.dart';
 import '../core/constants.dart';
 import 'supabase_service.dart';
@@ -63,6 +63,19 @@ class AuthService {
       return UserModel.fromJson(response);
     } catch (e) {
       throw Exception('Registrasi gagal: ${_supabaseService.handleError(e)}');
+    }
+  }
+
+  // Check if tutor profile exists
+  Future<bool> checkTutorProfileExists(String userId) async {
+    try {
+      return await _supabaseService.exists(
+        table: AppConstants.tutorsTable,
+        filters: {'user_id': userId},
+      );
+    } catch (e) {
+      print('Error checking tutor profile: $e');
+      return false;
     }
   }
 

@@ -6,7 +6,7 @@ import '../core/constants.dart';
 
 class TutorProvider with ChangeNotifier {
   final SupabaseService _supabaseService = SupabaseService();
-  
+
   List<TutorModel> _tutors = [];
   TutorModel? _selectedTutor;
   bool _isLoading = false;
@@ -44,7 +44,7 @@ class TutorProvider with ChangeNotifier {
       _tutors = (response as List)
           .map((json) => TutorModel.fromJson(json))
           .toList();
-      
+
       _setLoading(false);
     } catch (e) {
       _setError('Gagal memuat data tutor');
@@ -119,17 +119,23 @@ class TutorProvider with ChangeNotifier {
     // Subject filter
     if (_selectedSubject != null && _selectedSubject!.isNotEmpty) {
       filtered = filtered.where((tutor) {
-        return tutor.subjectsList.any((subject) => 
-            subject.toLowerCase().contains(_selectedSubject!.toLowerCase()));
+        return tutor.subjectsList.any(
+          (subject) =>
+              subject.toLowerCase().contains(_selectedSubject!.toLowerCase()),
+        );
       }).toList();
     }
 
     // Price range filter
     if (_minRate != null) {
-      filtered = filtered.where((tutor) => tutor.hourlyRate >= _minRate!).toList();
+      filtered = filtered
+          .where((tutor) => tutor.hourlyRate >= _minRate!)
+          .toList();
     }
     if (_maxRate != null) {
-      filtered = filtered.where((tutor) => tutor.hourlyRate <= _maxRate!).toList();
+      filtered = filtered
+          .where((tutor) => tutor.hourlyRate <= _maxRate!)
+          .toList();
     }
 
     return filtered;
@@ -138,8 +144,10 @@ class TutorProvider with ChangeNotifier {
   // Get tutors by subject
   List<TutorModel> getTutorsBySubject(String subject) {
     return _tutors.where((tutor) {
-      return tutor.subjectsList.any((tutorSubject) => 
-          tutorSubject.toLowerCase().contains(subject.toLowerCase()));
+      return tutor.subjectsList.any(
+        (tutorSubject) =>
+            tutorSubject.toLowerCase().contains(subject.toLowerCase()),
+      );
     }).toList();
   }
 
@@ -212,7 +220,8 @@ class TutorProvider with ChangeNotifier {
     _clearError();
 
     try {
-      await _supabaseService.client
+      // Insert new tutor profile into tutors table
+      final response = await _supabaseService.client
           .from(AppConstants.tutorsTable)
           .insert({
             'user_id': userId,
@@ -222,14 +231,29 @@ class TutorProvider with ChangeNotifier {
             'bio': bio,
             'rating': 0.0,
             'total_sessions': 0,
-          });
+          })
+          .select('''
+            *,
+            users!tutors_user_id_fkey(*)
+          ''')
+          .single();
 
-      // Reload tutors to include the new one
-      await loadTutors();
+      // Create TutorModel from response and set as selected tutor
+      _selectedTutor = TutorModel.fromJson(response);
+
+      // Add the new tutor to the tutors list
+      _tutors.add(_selectedTutor!);
+
+      // Sort tutors by rating (highest first)
+      _tutors.sort((a, b) => b.rating.compareTo(a.rating));
+
       _setLoading(false);
+      notifyListeners();
       return true;
     } catch (e) {
-      _setError('Gagal membuat profil tutor');
+      _setError(
+        'Gagal membuat profil tutor: ${_supabaseService.handleError(e)}',
+      );
       _setLoading(false);
       return false;
     }
@@ -238,17 +262,20 @@ class TutorProvider with ChangeNotifier {
   // Check if user is already a tutor
   Future<bool> isTutor(String userId) async {
     try {
+      _clearError();
+      
       final response = await _supabaseService.client
           .from(AppConstants.tutorsTable)
           .select('id')
-          .eq('user_id', userId);
+          .eq('user_id', userId)
+          .maybeSingle();
 
-      return response.isNotEmpty;
+      return response != null;
     } catch (e) {
+      _setError('Gagal memeriksa status tutor');
       return false;
     }
   }
-
   // Helper methods
   void _setLoading(bool loading) {
     _isLoading = loading;

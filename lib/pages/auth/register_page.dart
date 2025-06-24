@@ -8,6 +8,7 @@ import '../../core/validators.dart';
 import '../../widgets/common/custom_text_field.dart';
 import '../../widgets/common/custom_button.dart';
 import '../shared/main_navigation.dart';
+import 'tutor_setup_page.dart'; // Import TutorSetupPage
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({Key? key}) : super(key: key);
@@ -59,11 +60,20 @@ class _RegisterPageState extends State<RegisterPage> {
     });
 
     if (success) {
-      // Navigate to main navigation
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => MainNavigation()),
-        (route) => false,
-      );
+      // Check role and navigate accordingly
+      if (_selectedRole == AppConstants.roleTutor) {
+        // For tutors, navigate to setup page
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const TutorSetupPage()),
+          (route) => false,
+        );
+      } else {
+        // For students, navigate directly to main navigation
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const MainNavigation()),
+          (route) => false,
+        );
+      }
     } else {
       // Show error message
       ScaffoldMessenger.of(context).showSnackBar(
@@ -305,10 +315,15 @@ class _RegisterPageState extends State<RegisterPage> {
     return Consumer<AuthProvider>(
       builder: (context, authProvider, child) {
         return CustomButton(
-          text: 'Daftar',
+          text: _selectedRole == AppConstants.roleTutor 
+              ? 'Daftar & Setup Profil' 
+              : 'Daftar',
           onPressed: _isLoading ? null : _register,
           isLoading: _isLoading || authProvider.isLoading,
           width: double.infinity,
+          backgroundColor: _selectedRole == AppConstants.roleTutor 
+              ? AppColors.tutorColor 
+              : AppColors.primary,
         );
       },
     );

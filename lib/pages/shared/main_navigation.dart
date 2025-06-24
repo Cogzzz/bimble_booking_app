@@ -1,4 +1,4 @@
-// pages/shared/main_navigation.dart - Updated dengan navigasi programatik
+// pages/shared/main_navigation.dart - Updated with tutor setup check
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
@@ -8,7 +8,7 @@ import '../../core/constants.dart';
 // Student Pages
 import '../student/student_home_page.dart';
 import '../student/search_tutor_page.dart';
-import '../student/student_booking_page.dart'; 
+import '../student/student_booking_page.dart';
 import '../student/session_history_page.dart';
 import '../student/student_profile_page.dart';
 
@@ -17,6 +17,9 @@ import '../tutor/tutor_dashboard_page.dart';
 import '../tutor/schedule_page.dart';
 import '../tutor/session_history_page.dart' as tutor_history;
 import '../tutor/tutor_profile_page.dart';
+
+// Setup Page
+import '../auth/tutor_setup_page.dart';
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({Key? key}) : super(key: key);
@@ -49,7 +52,7 @@ class MainNavigationState extends State<MainNavigation> {
     if (authProvider.isStudent) {
       // Navigasi ke tab booking (index 2)
       navigateToTab(2);
-      
+
       // Delay untuk memastikan halaman sudah ter-render
       Future.delayed(Duration(milliseconds: 100), () {
         final studentBookingContext = context;
@@ -74,8 +77,18 @@ class MainNavigationState extends State<MainNavigation> {
           return Container();
         }
 
+        // Check if tutor needs setup
+        if (authProvider.needsTutorSetup) {
+          return TutorSetupPage(
+            onSetupComplete: () {
+              authProvider.completeTutorSetup();
+              // No need to navigate, the Consumer will rebuild automatically
+            },
+          );
+        }
+
         final isStudent = authProvider.isStudent;
-        
+
         return Scaffold(
           body: IndexedStack(
             index: _currentIndex,
@@ -85,7 +98,9 @@ class MainNavigationState extends State<MainNavigation> {
             currentIndex: _currentIndex,
             onTap: navigateToTab, // Menggunakan method navigateToTab
             type: BottomNavigationBarType.fixed,
-            selectedItemColor: AppColors.primary,
+            selectedItemColor: isStudent
+                ? AppColors.primary
+                : AppColors.tutorColor,
             unselectedItemColor: AppColors.textHint,
             backgroundColor: AppColors.surface,
             elevation: 8,
@@ -168,7 +183,8 @@ class MainNavigationState extends State<MainNavigation> {
 }
 
 // Global Key untuk MainNavigation
-final GlobalKey<MainNavigationState> mainNavigationKey = GlobalKey<MainNavigationState>();
+final GlobalKey<MainNavigationState> mainNavigationKey =
+    GlobalKey<MainNavigationState>();
 
 // Extension untuk navigasi dari child widgets
 extension NavigationHelper on BuildContext {

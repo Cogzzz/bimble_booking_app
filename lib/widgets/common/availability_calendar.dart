@@ -286,7 +286,7 @@ class _BookingPageState extends State<BookingPage> {
                   radius: 30,
                   backgroundColor: AppColors.primaryLight,
                   child: Text(
-                    widget.tutor.user?.name?.substring(0, 1).toUpperCase() ??
+                    widget.tutor.user?.name.substring(0, 1).toUpperCase() ??
                         'T',
                     style: AppTextStyles.h5.copyWith(
                       color: AppColors.primary,

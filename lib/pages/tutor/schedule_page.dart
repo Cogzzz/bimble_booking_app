@@ -51,34 +51,6 @@ class _SchedulePageState extends State<SchedulePage>
     }
   }
 
-  void _selectDate() async {
-    final selectedDate = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime.now().subtract(Duration(days: 30)),
-      lastDate: DateTime.now().add(Duration(days: 90)),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
-              primary: AppColors.primary,
-              onPrimary: AppColors.textWhite,
-              surface: AppColors.surface,
-              onSurface: AppColors.textPrimary,
-            ),
-          ),
-          child: child!,
-        );
-      },
-    );
-
-    if (selectedDate != null) {
-      setState(() {
-        _selectedDate = selectedDate;
-      });
-    }
-  }
-
   void _updateBookingStatus(String bookingId, String status) async {
     final bookingProvider = Provider.of<BookingProvider>(
       context,
@@ -242,9 +214,6 @@ class _SchedulePageState extends State<SchedulePage>
         backgroundColor: AppColors.tutorColor,
         title: Text('Jadwal Saya'),
         automaticallyImplyLeading: false,
-        actions: [
-          IconButton(icon: Icon(Icons.calendar_today), onPressed: _selectDate),
-        ],
         bottom: TabBar(
           controller: _tabController,
           labelColor: AppColors.textWhite,

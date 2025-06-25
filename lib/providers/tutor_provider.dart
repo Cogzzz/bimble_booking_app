@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import '../models/tutor_model.dart';
 import '../services/supabase_service.dart';
 import '../core/constants.dart';
@@ -77,20 +78,20 @@ class TutorProvider with ChangeNotifier {
   // Search tutors
   void searchTutors(String query) {
     _searchQuery = query.toLowerCase();
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   // Filter by subject
   void filterBySubject(String? subject) {
     _selectedSubject = subject;
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   // Filter by price range
   void filterByPriceRange(int? minRate, int? maxRate) {
     _minRate = minRate;
     _maxRate = maxRate;
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   // Clear all filters
@@ -99,7 +100,7 @@ class TutorProvider with ChangeNotifier {
     _selectedSubject = null;
     _minRate = null;
     _maxRate = null;
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   // Get filtered tutors
@@ -247,7 +248,7 @@ class TutorProvider with ChangeNotifier {
       _tutors.sort((a, b) => b.rating.compareTo(a.rating));
 
       _setLoading(false);
-      notifyListeners();
+      _safeNotifyListeners();
       return true;
     } catch (e) {
       _setError(
@@ -275,20 +276,35 @@ class TutorProvider with ChangeNotifier {
       return false;
     }
   }
+
+  void _safeNotifyListeners() {
+    if (hasListeners) {
+      if (SchedulerBinding.instance.schedulerPhase != SchedulerPhase.persistentCallbacks) {
+        notifyListeners();
+      } else {
+        SchedulerBinding.instance.addPostFrameCallback((_) {
+          if (hasListeners) {
+            notifyListeners();
+          }
+        });
+      }
+    }
+  }
+
   // Helper methods
   void _setLoading(bool loading) {
     _isLoading = loading;
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   void _setError(String error) {
     _errorMessage = error;
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   void _clearError() {
     _errorMessage = null;
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   void clearError() {
@@ -297,7 +313,7 @@ class TutorProvider with ChangeNotifier {
 
   void clearSelectedTutor() {
     _selectedTutor = null;
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   // Refresh data

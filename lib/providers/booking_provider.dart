@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import '../models/booking_model.dart';
 import '../services/supabase_service.dart';
 import '../core/constants.dart';
@@ -296,26 +297,42 @@ class BookingProvider with ChangeNotifier {
     };
   }
 
-  // Helper methods
+  // FIXED: Safe notification methods
+  void _safeNotifyListeners() {
+    if (hasListeners) {
+      // Check if we're currently building
+      if (SchedulerBinding.instance.schedulerPhase != SchedulerPhase.persistentCallbacks) {
+        notifyListeners();
+      } else {
+        // Defer notification until after build
+        SchedulerBinding.instance.addPostFrameCallback((_) {
+          if (hasListeners) {
+            notifyListeners();
+          }
+        });
+      }
+    }
+  }
+
   void _setLoading(bool loading) {
     _isLoading = loading;
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   void _setError(String error) {
     _errorMessage = error;
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   void _setSuccess(String success) {
     _successMessage = success;
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   void _clearMessages() {
     _errorMessage = null;
     _successMessage = null;
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   void clearMessages() {
